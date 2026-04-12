@@ -142,7 +142,7 @@ footer a{color:var(--accent)}
 <div class="stat"><div class="v" style="font-size:1.2rem">&#127783;</div><div class="l">Raindrops hitting<br>a window</div></div>
 </div>
 
-<p>In a Poisson process, events are <em>completely independent</em> &mdash; knowing when the last raindrop fell tells you nothing about when the next one will fall. The gaps between events follow an <span class="hi2">exponential distribution</span>: f(v) = e<sup>-v</sup>.</p>
+<p>In a Poisson process, events are <em>completely independent</em> &mdash; knowing when the last raindrop fell tells you nothing about when the next one will fall. The gaps between events follow an <span class="hi2">exponential distribution</span>: f(v) = e<sup>-v</sup>, where v is the <em>normalized gap</em> &mdash; the actual gap divided by the average gap size. For primes near x, the average gap is about log(x), so v&nbsp;=&nbsp;g/log(x). When v&nbsp;=&nbsp;1 the gap equals the average; v&nbsp;=&nbsp;2 means twice the average; v&nbsp;=&nbsp;0.5 means half. The exponential distribution says small gaps are common and large gaps are exponentially rare.</p>
 
 <p>But Gallagher proved this only <em>asymptotically</em> (in the limit of infinitely large primes). He gave no equation, no mechanism, and no rate. Two questions remained open:</p>
 
