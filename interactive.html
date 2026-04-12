@@ -162,12 +162,43 @@ footer a{color:var(--accent)}
 
 <p>Here's how we approached the problem. In physics, we sometimes work backwards: if we know the answer (the exponential distribution), can we find an equation whose solution IS that answer?</p>
 
-<div class="card">
-<h3>The thought process</h3>
-<div class="step"><span class="step-num">1</span><div class="step-body"><h4>The target is known</h4><p>We want the gap distribution to be f(v) = e<sup>-v</sup> (exponential = Poisson). This is our "equilibrium."</p></div></div>
-<div class="step"><span class="step-num">2</span><div class="step-body"><h4>Find a process whose equilibrium is Exp(1)</h4><p>The Feller diffusion dV&nbsp;=&nbsp;(1-V)dt&nbsp;+&nbsp;&radic;(2V)dW has exactly this property. It's a particle that drifts toward V=1 with noise that depends on position: small values are quiet, large values are noisy.</p></div></div>
-<div class="step"><span class="step-num">3</span><div class="step-body"><h4>Change the viewpoint</h4><p>Instead of tracking the probability density f, define a <em>velocity field</em> u&nbsp;=&nbsp;-d/dv[log&nbsp;f]. This transforms the problem from probability into fluid dynamics.</p></div></div>
-<div class="step"><span class="step-num">4</span><div class="step-body"><h4>Discover the equation</h4><p>Compute what equation u satisfies. The result is a Burgers-Fisher equation &mdash; a genuine Navier-Stokes-type PDE.</p></div></div>
+<div class="card" style="border-color:var(--gold)">
+<h3 style="color:var(--gold)">Step 1: The target is known</h3>
+<p>We want the gap distribution to be f(v) = e<sup>-v</sup> (exponential = Poisson). This is our "equilibrium" &mdash; the smooth lake we're aiming for. The chart below shows this target: most gaps are near or below the average (v&nbsp;&lt;&nbsp;1), large gaps are exponentially rare.</p>
+<canvas id="targetChart" height="200"></canvas>
+</div>
+
+<div class="card" style="border-color:var(--accent)">
+<h3 style="color:var(--accent)">Step 2: Find a process whose equilibrium is Exp(1)</h3>
+<p>The <span class="hi">Feller diffusion</span> dV&nbsp;=&nbsp;(1-V)dt&nbsp;+&nbsp;&radic;(2V)dW is a random particle that:</p>
+<ul style="margin:6px 0 12px 20px">
+<li><strong>Drifts toward V = 1</strong> (the average gap) &mdash; if V is too high, it gets pulled down; too low, pulled up</li>
+<li><strong>Has noise proportional to &radic;V</strong> &mdash; near V&nbsp;=&nbsp;0 (tiny gaps), the particle barely fluctuates; at V&nbsp;=&nbsp;3 (large gaps), it bounces wildly</li>
+</ul>
+<p>Watch it live: many particles released from different starting points all converge to the exponential distribution. Click <strong>Reset</strong> to restart.</p>
+<canvas id="fellerCanvas" height="280" style="background:#0d1321;border-radius:8px;cursor:pointer"></canvas>
+<div style="display:flex;gap:10px;margin-top:8px">
+<button onclick="startFeller()" style="background:var(--accent);color:var(--bg);border:none;padding:6px 18px;border-radius:6px;cursor:pointer;font-weight:600">Reset</button>
+<span style="color:var(--muted);font-size:.82rem;display:flex;align-items:center">Left: particle paths over time &nbsp;|&nbsp; Right: histogram converges to e<sup>-v</sup></span>
+</div>
+</div>
+
+<div class="card" style="border-color:var(--accent2)">
+<h3 style="color:var(--accent2)">Step 3: Change the viewpoint &mdash; from density to velocity</h3>
+<p>Instead of tracking the probability density f(v), we define a <em>velocity field</em> u&nbsp;=&nbsp;-d/dv[log&nbsp;f]. This transforms the problem from probability into fluid dynamics.</p>
+<p>See it in action: the <span style="color:var(--accent)">blue curve</span> is the density f(v), the <span style="color:var(--accent2)">pink curve</span> is the velocity u(v) derived from it. When f is exactly exponential, u is exactly 1 (flat line). Any bump in f creates a ripple in u.</p>
+<canvas id="transformChart" height="220"></canvas>
+<div class="slider-row">
+<label>Sieve strength:</label>
+<input type="range" id="sieveSlider" min="0" max="100" value="60" step="1">
+<span class="val" id="sieveVal">0.60</span>
+</div>
+<p style="color:var(--muted);font-size:.82rem">Slide left for pure Poisson (no sieve), right for strong sieve (small primes). Watch how the velocity field develops ripples.</p>
+</div>
+
+<div class="card" style="border-color:var(--accent3)">
+<h3 style="color:var(--accent3)">Step 4: Discover the equation</h3>
+<p>Compute what equation u satisfies. The result, derived by exact algebra (verified symbolically in three computer algebra systems), is the <span class="hi">Burgers-Fisher equation</span> &mdash; a genuine Navier-Stokes-type PDE with a self-correcting reaction term. Details in the next section.</p>
 </div>
 
 <div class="analogy">Imagine you find a perfectly smooth lake (the exponential distribution). You want to understand how rivers converge to it. Instead of studying the water level (the density f), you study the <em>current</em> (the velocity u). The current tells you where the water is flowing and how fast it's approaching equilibrium. We did the same thing with prime gaps: we studied the "current" instead of the "water level."</div>
@@ -475,6 +506,191 @@ new Chart(document.getElementById('cascadeChart'), {
   }
 });
 
+
+// ============================================================
+// Step 1: Target distribution chart
+// ============================================================
+(() => {
+  const labels = [], fv = [];
+  for (let vi = 0; vi <= 5; vi += 0.05) {
+    labels.push(vi.toFixed(2));
+    fv.push(Math.exp(-vi));
+  }
+  new Chart(document.getElementById('targetChart'), {
+    type: 'line',
+    data: { labels, datasets: [{
+      label: 'f(v) = e^{-v} (the Poisson target)',
+      data: fv, borderColor: '#fbbf24', backgroundColor: 'rgba(251,191,36,0.1)',
+      borderWidth: 2, pointRadius: 0, fill: true, tension: .3
+    }]},
+    options: { responsive: true, plugins: { legend: { labels: { color: '#e2e8f0' } } },
+      scales: {
+        x: { title: { display: true, text: 'v = normalized gap', color: '#94a3b8' }, ticks: { color: '#94a3b8', maxTicksLimit: 10 }, grid: { color: '#334155' } },
+        y: { title: { display: true, text: 'Probability density', color: '#94a3b8' }, ticks: { color: '#94a3b8' }, grid: { color: '#334155' } }
+      }
+    }
+  });
+})();
+
+// ============================================================
+// Step 2: Feller diffusion live simulation
+// ============================================================
+let fellerAnim = null;
+function startFeller() {
+  if (fellerAnim) cancelAnimationFrame(fellerAnim);
+  const canvas = document.getElementById('fellerCanvas');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width = canvas.offsetWidth * 2;
+  const H = canvas.height = 560;
+  const nParticles = 80;
+  const dt = 0.02;
+  const histW = Math.floor(W * 0.28);
+  const traceW = W - histW - 20;
+
+  // Particles start from a range of initial values
+  let particles = [];
+  for (let i = 0; i < nParticles; i++) {
+    particles.push({ v: 0.1 + Math.random() * 4, trail: [] });
+  }
+  let step = 0;
+  const maxSteps = 600;
+  const nBins = 30;
+
+  function frame() {
+    // Physics: Feller SDE dV = (1-V)dt + sqrt(2V)dW
+    for (const p of particles) {
+      const drift = (1 - p.v) * dt;
+      const noise = Math.sqrt(2 * Math.max(p.v, 0.001) * dt) * (Math.random() * 2 - 1) * 1.4;
+      p.v = Math.max(0.001, p.v + drift + noise);
+      p.trail.push(p.v);
+      if (p.trail.length > maxSteps) p.trail.shift();
+    }
+    step++;
+
+    ctx.clearRect(0, 0, W, H);
+
+    // Draw particle trails
+    const vMax = 5;
+    const colors = ['#38bdf8', '#a78bfa', '#f472b6', '#34d399', '#fbbf24',
+                    '#f87171', '#818cf8', '#67e8f9', '#c084fc', '#fb923c'];
+    for (let i = 0; i < particles.length; i++) {
+      const trail = particles[i].trail;
+      const col = colors[i % colors.length];
+      ctx.strokeStyle = col + '30';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      for (let j = 0; j < trail.length; j++) {
+        const x = (j / maxSteps) * traceW;
+        const y = H - (trail[j] / vMax) * H;
+        j === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+      // Current position dot
+      if (trail.length > 0) {
+        const lx = ((trail.length - 1) / maxSteps) * traceW;
+        const ly = H - (trail[trail.length - 1] / vMax) * H;
+        ctx.fillStyle = col;
+        ctx.beginPath(); ctx.arc(lx, ly, 3, 0, 7); ctx.fill();
+      }
+    }
+
+    // v=1 reference line
+    ctx.strokeStyle = '#fbbf2466';
+    ctx.lineWidth = 2;
+    ctx.setLineDash([6, 4]);
+    const y1 = H - (1 / vMax) * H;
+    ctx.beginPath(); ctx.moveTo(0, y1); ctx.lineTo(traceW, y1); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = '#fbbf24';
+    ctx.font = '20px sans-serif';
+    ctx.fillText('v = 1 (mean)', 10, y1 - 8);
+
+    // Histogram on the right
+    const histX0 = traceW + 20;
+    const binH = H / nBins;
+    const bins = new Array(nBins).fill(0);
+    for (const p of particles) bins[Math.min(nBins - 1, Math.floor(p.v / vMax * nBins))]++;
+    const maxBin = Math.max(...bins, 1);
+    // Theoretical e^{-v}
+    for (let b = 0; b < nBins; b++) {
+      const vc = (b + 0.5) / nBins * vMax;
+      const theoretical = Math.exp(-vc) * nParticles * (vMax / nBins);
+      const tw = (theoretical / maxBin) * (histW - 10);
+      ctx.fillStyle = '#fbbf2418';
+      ctx.fillRect(histX0, H - (b + 1) * binH, tw, binH - 1);
+    }
+    for (let b = 0; b < nBins; b++) {
+      const bw = (bins[b] / maxBin) * (histW - 10);
+      ctx.fillStyle = '#38bdf866';
+      ctx.fillRect(histX0, H - (b + 1) * binH, bw, binH - 1);
+    }
+    ctx.fillStyle = '#94a3b8';
+    ctx.font = '18px sans-serif';
+    ctx.fillText('Histogram', histX0 + 4, 22);
+    ctx.fillStyle = '#fbbf24';
+    ctx.fillText('e\u207b\u1d5b (target)', histX0 + 4, 44);
+
+    // Labels
+    ctx.fillStyle = '#94a3b8';
+    ctx.font = '18px sans-serif';
+    ctx.fillText('Time \u2192', traceW / 2 - 30, H - 6);
+    ctx.save(); ctx.translate(8, H / 2); ctx.rotate(-Math.PI / 2);
+    ctx.fillText('v (gap size)', -40, 0); ctx.restore();
+
+    fellerAnim = requestAnimationFrame(frame);
+  }
+  frame();
+}
+startFeller();
+
+// ============================================================
+// Step 3: Density-to-velocity transformation
+// ============================================================
+let transformChartObj = null;
+function updateTransform() {
+  const sieve = parseFloat(document.getElementById('sieveSlider').value) / 100;
+  document.getElementById('sieveVal').textContent = sieve.toFixed(2);
+
+  const labels = [], fData = [], uData = [];
+  for (let vi = 0.05; vi <= 5; vi += 0.04) {
+    labels.push(vi.toFixed(2));
+    // f(v) = e^{-v} * [1 + sieve * perturbation]
+    const perturbation = sieve * 0.6 * (Math.sin(2*Math.PI*vi*5/3) * 0.5 +
+                          Math.cos(2*Math.PI*vi*5/6) * 0.3) * Math.exp(-vi * 0.2);
+    const fv = Math.exp(-vi) * (1 + perturbation);
+    fData.push(Math.max(fv, 0.001));
+    // u = -(log f)' ≈ 1 - perturbation'/(1+perturbation)
+    const uv = 1 - sieve * 0.6 * (Math.cos(2*Math.PI*vi*5/3)*2*Math.PI*5/3*0.5
+               - Math.sin(2*Math.PI*vi*5/6)*2*Math.PI*5/6*0.3) * Math.exp(-vi*0.2)
+               / (1 + perturbation);
+    uData.push(uv);
+  }
+
+  if (transformChartObj) {
+    transformChartObj.data.labels = labels;
+    transformChartObj.data.datasets[0].data = fData;
+    transformChartObj.data.datasets[1].data = uData;
+    transformChartObj.update('none');
+  } else {
+    transformChartObj = new Chart(document.getElementById('transformChart'), {
+      type: 'line',
+      data: { labels, datasets: [
+        { label: 'f(v) density', data: fData, borderColor: '#38bdf8', borderWidth: 2, pointRadius: 0, tension: .3, yAxisID: 'y' },
+        { label: 'u(v) velocity', data: uData, borderColor: '#f472b6', borderWidth: 2, pointRadius: 0, tension: .3, yAxisID: 'y2' },
+      ]},
+      options: { responsive: true, animation: false,
+        plugins: { legend: { labels: { color: '#e2e8f0' } } },
+        scales: {
+          x: { ticks: { color: '#94a3b8', maxTicksLimit: 10 }, grid: { color: '#334155' } },
+          y: { position: 'left', title: { display: true, text: 'f(v) density', color: '#38bdf8' }, ticks: { color: '#38bdf8' }, grid: { color: '#334155' } },
+          y2: { position: 'right', min: -1, max: 3, title: { display: true, text: 'u(v) velocity', color: '#f472b6' }, ticks: { color: '#f472b6' }, grid: { display: false } }
+        }
+      }
+    });
+  }
+}
+document.getElementById('sieveSlider').addEventListener('input', updateTransform);
+updateTransform();
 
 // ============================================================
 // Sticky nav
