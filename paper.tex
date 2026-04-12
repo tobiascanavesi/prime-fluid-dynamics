@@ -22,9 +22,9 @@
 \newcommand{\cL}{\mathcal{L}}
 \newcommand{\eps}{\varepsilon}
 
-\title[A Burgers--Fisher Equation for Prime Gap Convergence]{%
+\title[A Burgers--Fisher Equation for Prime Gaps]{%
 A Burgers--Fisher Equation for Prime Gaps:\\
-Spectral Proof of Convergence to Poisson}
+Spectral Analysis of Convergence to Poisson}
 
 \author{Tobias Canavesi}
 \address{Independent Researcher}
@@ -35,13 +35,13 @@ Spectral Proof of Convergence to Poisson}
 \begin{document}
 
 \begin{abstract}
-We prove that the velocity field $u = -\partial_v \log f$, where $f$ is the probability density of normalized prime gaps $v = g/\log x$, satisfies a Burgers--Fisher equation in a porous medium:
+We propose a PDE model for the convergence of prime gaps to the Poisson regime.
+If the density $f$ of normalized prime gaps $v = g/\log x$ evolves under the Feller Fokker--Planck equation---chosen because its stationary distribution is $\mathrm{Exp}(1)$ and its state-dependent diffusivity matches the empirical rigidity of small gaps---then the velocity field $u = -\partial_v \log f$ satisfies a Burgers--Fisher equation in a porous medium:
 \[
 \partial_t u + 2v\,u\,\partial_v u = v\,\partial_v^2 u + (v{+}2)\,\partial_v u + u(1{-}u).
 \]
-The Fisher--KPP reaction term $u(1{-}u)$ emerges naturally from the Fokker--Planck structure and drives $u$ toward $1$, which corresponds to the exponential (Poisson) distribution.
-The linearized perturbation operator has associated Laguerre polynomial eigenfunctions with spectral gap~$1$.
-Under a decaying sieve forcing, perturbations vanish as $O(1/(\log x)^\beta)$.
+The Fisher--KPP reaction term $u(1{-}u)$ emerges from the Fokker--Planck structure and drives $u$ toward~$1$ (the Poisson equilibrium).
+The linearized perturbation operator has associated Laguerre polynomial eigenfunctions with spectral gap~$1$, and perturbations with decaying forcing vanish as $O(1/(\log x)^\beta)$.
 Numerical verification at 11 scales from $10^3$ to $10^8$ shows the mutual information between consecutive gaps decays as $(\log x)^{-0.19}$ ($R^2 = 0.986$) and that prime $p = 3$ carries $94\%$ of the sieve signal.
 \end{abstract}
 
@@ -66,6 +66,10 @@ This provides both a mechanism (the spectral gap of a Laguerre-type operator) an
 % ====================================================================
 
 \subsection{The Feller process and its Fokker--Planck equation}
+
+We seek a diffusion process whose stationary distribution is $\mathrm{Exp}(1)$---the Gallagher--Poisson target.
+Among processes with linear drift, the unique choice whose diffusion coefficient also matches the empirical structure of prime gaps is the Feller diffusion: its noise $\sigma(V) = \sqrt{2V}$ means small gaps ($V \approx 0$) are nearly deterministic while large gaps fluctuate freely, reflecting the tight arithmetic constraints the sieve imposes on small gaps (only $g = 2, 4, 6$ are common) versus the broad distribution of large gaps.
+Cohen~\cite{Cohen2024} independently confirmed that the moments of prime gaps converge to those of the exponential distribution, further supporting this choice.
 
 Consider the Feller diffusion (Cox--Ingersoll--Ross process)
 \begin{equation}\label{eq:sde}
@@ -229,9 +233,9 @@ We verify the MI decay numerically (\S\ref{sec:numerics}) but leave the rigorous
 
 \subsection{The sieve as porous medium}
 
-Under the Hardy--Littlewood conjecture:
-$f(v,s) \propto W(vs) \cdot e^{-v}$,
-where $W(g) = \prod_{p|g,\,p>2} (p{-}1)/(p{-}2)$.
+Under the Hardy--Littlewood conjecture~\cite{HL1923}, the pair singular series gives:
+$f(v,s) \propto \fS(\{0, vs\}) \cdot e^{-v}$,
+where the relative weight is $W(g) = \fS(\{0,g\})/(2C_2) = \prod_{p|g,\,p>2} (p{-}1)/(p{-}2)$.
 Each prime $p$ is a ``pore'' with strength $\delta_p = 1/(p{-}2)$: $\delta_3 = 1$, $\delta_5 = 1/3$, $\delta_7 = 1/5$.
 As $s \to \infty$, gap values $g = vs$ grow and the mod-$p$ structure equidistributes, weakening each pore.
 
@@ -277,7 +281,7 @@ To our knowledge, this is the first numerical measurement of the MI decay rate f
 
 \subsection{Prime $3$ dominance}
 $\MI_3 / \MI_{\mathrm{total}} \approx 94\%$ at all scales.
-Empirical $\MI_3 = 0.302$ bits vs.\ theoretical $0.250$ bits; the $21\%$ excess is the Lemke Oliver--Soundararajan bias~\cite{LO2016}, whose Main Conjecture predicts decay as $O((\log\log x)/\log x)$.
+Empirical $\MI_3 = 0.302$ bits vs.\ theoretical $0.250$ bits; the $21\%$ excess over the i.i.d.\ prediction is consistent with the known biases in consecutive prime residues documented by Lemke Oliver and Soundararajan~\cite{LO2016}.
 The structural zeros $P(1,1) = P(2,2) = 0$ hold \emph{exactly} for all primes $> 3$: if $g_n \equiv 1 \pmod{3}$ then $p_{n+1} \equiv 2 \pmod{3}$, forcing $g_{n+1} \equiv 1$ to require $p_{n+2} \equiv 0 \pmod{3}$, which is impossible for $p_{n+2} > 3$. Verified empirically with zero exceptions in $78{,}493$ consecutive gap pairs.
 
 \subsection{Perturbation energy}
@@ -312,16 +316,19 @@ adding $p = 3$ alone reduces KL divergence from the empirical distribution by $7
 
 Gallagher~\cite{Gallagher1976} already proved (conditionally) that prime gaps converge to Poisson. Our paper does not give a new proof of this fact.
 What the paper provides is a \emph{mechanism}: a specific PDE (the Burgers--Fisher equation) whose spectral structure explains \emph{why} the convergence occurs and \emph{how fast} it proceeds.
-The relationship between our work and Gallagher's is analogous to the relationship between the Ising model and the thermodynamic observation that magnets lose magnetization above the Curie temperature: the observation was known first; the model explains the mechanism.
+
+As Tao~\cite{Tao2015} observes, probabilistic models in number theory are ``largely informal and fuzzy in nature'' yet ``indirectly enable rigorous progress'' by serving as ``directional guides for fruitful conjectures'' and ``error-detection tools.''
+Our paper follows the pattern established by the random matrix theory program for $L$-functions: Keating and Snaith~\cite{KS2000} derived the moments conjecture for $\zeta(1/2+it)$ by modeling zeta with random matrix characteristic polynomials---a heuristic that generates precise, testable predictions while awaiting rigorous derivation.
+Similarly, we derive the Burgers--Fisher equation from a specific Fokker--Planck model, generate a convergence rate prediction ($\alpha \approx 0.19$), and verify it numerically, while the derivation of the model from the Hardy--Littlewood conjecture remains open.
 
 The logical structure is:
 \begin{enumerate}
 \item \textbf{Pure PDE (Theorems~\ref{thm:burgers-fisher}--\ref{thm:convergence}):} If a density evolves under the Feller Fokker--Planck equation, the velocity field satisfies the Burgers--Fisher equation with stable equilibrium $u = 1$ and spectral gap $1$. Perturbations with decaying forcing vanish. \emph{These are unconditional theorems.}
-\item \textbf{Model (Hypothesis~\ref{hyp:sieve}):} The prime gap density at scale $s = \log x$ is well-approximated by the Feller Fokker--Planck stationary distribution perturbed by the singular series, with perturbation decaying as $O(1/s^\beta)$. \emph{This is a modeling assumption, supported by numerical evidence but not derived from number theory.}
+\item \textbf{Model (Hypothesis~\ref{hyp:sieve}):} The prime gap density at scale $s = \log x$ is well-approximated by the Feller stationary distribution perturbed by the singular series, with perturbation decaying as $O(1/s^\beta)$. \emph{This is a modeling assumption, supported by numerical evidence but not derived from number theory.}
 \item \textbf{Consequence:} Under the model, the spectral gap drives convergence to Poisson at a computable rate.
 \end{enumerate}
 
-The open challenge is to \emph{derive} Hypothesis~\ref{hyp:sieve} from the Hardy--Littlewood conjecture, which would close the gap between the PDE theorems and number theory.
+The open challenge is to \emph{derive} Hypothesis~\ref{hyp:sieve} from the Hardy--Littlewood conjecture, which would close the gap between the PDE theorems and number theory---as Talagrand's proof of the Parisi formula~\cite{Talagrand2006} closed a 27-year gap between the physics prediction and rigorous mathematics.
 
 \subsection{Open problems}
 
@@ -363,6 +370,18 @@ G.~Szeg\H{o}, \emph{Orthogonal Polynomials}, 4th ed., AMS, 1975.
 
 \bibitem{Risken1989}
 H.~Risken, \emph{The Fokker--Planck Equation}, 2nd ed., Springer, 1989.
+
+\bibitem{Cohen2024}
+A.~Cohen, S.~Iyer, and C.~Manack, \emph{Gaps between consecutive primes and the exponential distribution}, Experimental Math.\ \textbf{34}(2) (2024).
+
+\bibitem{KS2000}
+J.~P.~Keating and N.~C.~Snaith, \emph{Random matrix theory and $\zeta(1/2+it)$}, Comm.\ Math.\ Phys.\ \textbf{214} (2000), 57--89.
+
+\bibitem{Tao2015}
+T.~Tao, \emph{Probabilistic models and heuristics for the primes}, lecture notes, UCLA 254A Supplement~4 (2015).
+
+\bibitem{Talagrand2006}
+M.~Talagrand, \emph{The Parisi formula}, Ann.\ of Math.\ \textbf{163} (2006), 221--263.
 
 \end{thebibliography}
 
