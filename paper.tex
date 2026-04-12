@@ -42,7 +42,7 @@ We prove that the velocity field $u = -\partial_v \log f$, where $f$ is the prob
 The Fisher--KPP reaction term $u(1{-}u)$ emerges naturally from the Fokker--Planck structure and drives $u$ toward $1$, which corresponds to the exponential (Poisson) distribution.
 The linearized perturbation operator has associated Laguerre polynomial eigenfunctions with spectral gap~$1$.
 Under a decaying sieve forcing, perturbations vanish as $O(1/(\log x)^\beta)$.
-We verify numerically that the mutual information between consecutive gaps decays as $(\log x)^{-0.19}$---the first quantitative estimate of this rate---and that prime $p = 3$ carries $94\%$ of the sieve signal.
+Numerical verification at 11 scales from $10^3$ to $10^8$ shows the mutual information between consecutive gaps decays as $(\log x)^{-0.19}$ ($R^2 = 0.986$) and that prime $p = 3$ carries $94\%$ of the sieve signal.
 \end{abstract}
 
 \maketitle
@@ -53,7 +53,8 @@ We verify numerically that the mutual information between consecutive gaps decay
 % ====================================================================
 
 Gallagher~\cite{Gallagher1976} proved, conditionally on the Hardy--Littlewood conjecture~\cite{HL1923}, that prime counts in short intervals converge to Poisson statistics.
-Despite decades of work~\cite{LO2016, Kuperberg2023, Holt2024}, no quantitative convergence rate has been established.
+Lemke Oliver and Soundararajan~\cite{LO2016} discovered biases in consecutive prime residues decaying as $O((\log\log x)/\log x)$; Holt~\cite{Holt2024} modeled these biases via sieve dynamics.
+However, no quantitative convergence rate for the overall gap distribution to Poisson has been established.
 
 We construct a velocity field from the prime gap distribution and show it satisfies a nonlinear PDE whose unique stable equilibrium is the Poisson regime.
 This provides both a mechanism (the spectral gap of a Laguerre-type operator) and, numerically, a rate ($\approx (\log x)^{-0.19}$).
@@ -272,12 +273,12 @@ All measurements use $N = 200{,}000$ primes at 11 scales ($10^3$ to $10^8$).
 
 \subsection{MI decay rate}
 $\MI_{\mathrm{total}}(x) \sim 0.555 / (\log x)^{0.186}$, $R^2 = 0.986$.
-This is the first quantitative estimate of the convergence rate to Poisson.
+To our knowledge, this is the first numerical measurement of the MI decay rate for prime gaps.
 
 \subsection{Prime $3$ dominance}
 $\MI_3 / \MI_{\mathrm{total}} \approx 94\%$ at all scales.
-Empirical $\MI_3 = 0.302$ bits vs.\ theoretical $0.250$ bits; the $21\%$ excess is the Lemke Oliver--Soundararajan bias~\cite{LO2016}, decaying as $O((\log\log x)/\log x)$~\cite{Holt2024}.
-The structural zeros $P(1,1) = P(2,2) = 0$ hold exactly at all scales.
+Empirical $\MI_3 = 0.302$ bits vs.\ theoretical $0.250$ bits; the $21\%$ excess is the Lemke Oliver--Soundararajan bias~\cite{LO2016}, whose Main Conjecture predicts decay as $O((\log\log x)/\log x)$.
+The structural zeros $P(1,1) = P(2,2) = 0$ hold \emph{exactly} for all primes $> 3$: if $g_n \equiv 1 \pmod{3}$ then $p_{n+1} \equiv 2 \pmod{3}$, forcing $g_{n+1} \equiv 1$ to require $p_{n+2} \equiv 0 \pmod{3}$, which is impossible for $p_{n+2} > 3$. Verified empirically with zero exceptions in $78{,}493$ consecutive gap pairs.
 
 \subsection{Perturbation energy}
 $E(s) = \|\varphi\|^2_{L^2(e^v)} \sim C/(\log x)^{0.63}$, $R^2 = 0.67$.
@@ -303,14 +304,31 @@ adding $p = 3$ alone reduces KL divergence from the empirical distribution by $7
 
 
 % ====================================================================
-\section{Open Problems}
-\label{sec:open}
+\section{Discussion: What the Paper Does and Does Not Prove}
+\label{sec:discussion}
 % ====================================================================
 
+\subsection{The role of the PDE model}
+
+Gallagher~\cite{Gallagher1976} already proved (conditionally) that prime gaps converge to Poisson. Our paper does not give a new proof of this fact.
+What the paper provides is a \emph{mechanism}: a specific PDE (the Burgers--Fisher equation) whose spectral structure explains \emph{why} the convergence occurs and \emph{how fast} it proceeds.
+The relationship between our work and Gallagher's is analogous to the relationship between the Ising model and the thermodynamic observation that magnets lose magnetization above the Curie temperature: the observation was known first; the model explains the mechanism.
+
+The logical structure is:
 \begin{enumerate}
-\item \textbf{Derive} $\|\varphi(\cdot, s)\| = O(1/s^\beta)$ from the Hardy--Littlewood conjecture and equidistribution of primes in arithmetic progressions.
-\item \textbf{Prove} MI $\to 0$ from the Burgers--Fisher framework (requires a joint version of Hypothesis~\ref{hyp:sieve}).
-\item \textbf{Compute} the exponent $\alpha \approx 0.19$ from first principles: it should follow from the pore strength $\delta_3 = 1$ and the equidistribution rate of gaps mod~$3$.
+\item \textbf{Pure PDE (Theorems~\ref{thm:burgers-fisher}--\ref{thm:convergence}):} If a density evolves under the Feller Fokker--Planck equation, the velocity field satisfies the Burgers--Fisher equation with stable equilibrium $u = 1$ and spectral gap $1$. Perturbations with decaying forcing vanish. \emph{These are unconditional theorems.}
+\item \textbf{Model (Hypothesis~\ref{hyp:sieve}):} The prime gap density at scale $s = \log x$ is well-approximated by the Feller Fokker--Planck stationary distribution perturbed by the singular series, with perturbation decaying as $O(1/s^\beta)$. \emph{This is a modeling assumption, supported by numerical evidence but not derived from number theory.}
+\item \textbf{Consequence:} Under the model, the spectral gap drives convergence to Poisson at a computable rate.
+\end{enumerate}
+
+The open challenge is to \emph{derive} Hypothesis~\ref{hyp:sieve} from the Hardy--Littlewood conjecture, which would close the gap between the PDE theorems and number theory.
+
+\subsection{Open problems}
+
+\begin{enumerate}
+\item \textbf{Derive the sieve diffusion hypothesis} from Hardy--Littlewood and equidistribution of primes in arithmetic progressions.
+\item \textbf{Prove MI $\to 0$} from the Burgers--Fisher framework (requires extending from marginal to joint gap densities).
+\item \textbf{Compute the exponent} $\alpha \approx 0.19$ from first principles, starting from the pore strength $\delta_3 = 1$ and the equidistribution rate of gaps mod~$3$.
 \end{enumerate}
 
 
@@ -336,9 +354,6 @@ G.~H.~Hardy and J.~E.~Littlewood, \emph{Some problems of `Partitio Numerorum': I
 
 \bibitem{LO2016}
 R.~J.~Lemke Oliver and K.~Soundararajan, \emph{Unexpected biases in the distribution of consecutive primes}, PNAS \textbf{113} (2016), E4446--E4454.
-
-\bibitem{Kuperberg2023}
-G.~Kuperberg, \emph{Sums of singular series with large sets}, Quart.\ J.\ Math.\ \textbf{74} (2023), 1489--1518.
 
 \bibitem{Holt2024}
 F.~Holt, \emph{Expected biases in the distribution of consecutive primes}, preprint (2024), arXiv:2405.03540.
