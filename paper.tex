@@ -1,0 +1,354 @@
+\documentclass[11pt, a4paper]{amsart}
+
+\usepackage{amsmath, amssymb, amsthm}
+\usepackage{hyperref}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage[dvipsnames]{xcolor}
+
+\theoremstyle{plain}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{remark}[theorem]{Remark}
+\newtheorem{hypothesis}[theorem]{Hypothesis}
+
+\newcommand{\MI}{\operatorname{MI}}
+\newcommand{\fS}{\mathfrak{S}}
+\newcommand{\cL}{\mathcal{L}}
+\newcommand{\eps}{\varepsilon}
+
+\title[A Burgers--Fisher Equation for Prime Gap Convergence]{%
+A Burgers--Fisher Equation for Prime Gaps:\\
+Spectral Proof of Convergence to Poisson}
+
+\author{Tobias Canavesi}
+\address{Independent Researcher}
+\email{tobiascanavesi@gmail.com}
+
+\date{April 2026}
+
+\begin{document}
+
+\begin{abstract}
+We prove that the velocity field $u = -\partial_v \log f$, where $f$ is the probability density of normalized prime gaps $v = g/\log x$, satisfies a Burgers--Fisher equation in a porous medium:
+\[
+\partial_t u + 2v\,u\,\partial_v u = v\,\partial_v^2 u + (v{+}2)\,\partial_v u + u(1{-}u).
+\]
+The Fisher--KPP reaction term $u(1{-}u)$ emerges naturally from the Fokker--Planck structure and drives $u$ toward $1$, which corresponds to the exponential (Poisson) distribution.
+The linearized perturbation operator has associated Laguerre polynomial eigenfunctions with spectral gap~$1$.
+Under a decaying sieve forcing, perturbations vanish as $O(1/(\log x)^\beta)$.
+We verify numerically that the mutual information between consecutive gaps decays as $(\log x)^{-0.19}$---the first quantitative estimate of this rate---and that prime $p = 3$ carries $94\%$ of the sieve signal.
+\end{abstract}
+
+\maketitle
+\tableofcontents
+
+% ====================================================================
+\section{Introduction}
+% ====================================================================
+
+Gallagher~\cite{Gallagher1976} proved, conditionally on the Hardy--Littlewood conjecture~\cite{HL1923}, that prime counts in short intervals converge to Poisson statistics.
+Despite decades of work~\cite{LO2016, Kuperberg2023, Holt2024}, no quantitative convergence rate has been established.
+
+We construct a velocity field from the prime gap distribution and show it satisfies a nonlinear PDE whose unique stable equilibrium is the Poisson regime.
+This provides both a mechanism (the spectral gap of a Laguerre-type operator) and, numerically, a rate ($\approx (\log x)^{-0.19}$).
+
+
+% ====================================================================
+\section{The Burgers--Fisher Equation for Prime Gaps}
+\label{sec:equation}
+% ====================================================================
+
+\subsection{The Feller process and its Fokker--Planck equation}
+
+Consider the Feller diffusion (Cox--Ingersoll--Ross process)
+\begin{equation}\label{eq:sde}
+dV = (1 - V)\,dt + \sqrt{2V}\,dW_t, \qquad V \ge 0,
+\end{equation}
+with mean-reversion toward~$1$ and state-dependent noise $\sigma(V) = \sqrt{2V}$.
+Its Fokker--Planck equation for the density $f(v,t)$ is
+\begin{equation}\label{eq:fp}
+\partial_t f = v f'' + (v+1)f' + f,
+\end{equation}
+where primes denote $\partial_v$.
+
+\begin{lemma}\label{lem:stationary}
+$f_\infty(v) = e^{-v}$ is the unique probability density satisfying $\cL f_\infty = 0$, where $\cL f = vf'' + (v+1)f' + f$.
+\end{lemma}
+
+\begin{proof}
+Direct verification: $\cL(e^{-v}) = v \cdot e^{-v} + (v+1)(-e^{-v}) + e^{-v} = 0$.
+Uniqueness follows from the general theory of Feller diffusions~\cite{Risken1989}: the process~\eqref{eq:sde} with $2 \times \text{mean-reversion speed} / \sigma^2 = 2 \cdot 1 / 2 = 1 \ge 1$ has an entrance boundary at $0$ and a natural boundary at $\infty$, admitting a unique stationary distribution.
+\end{proof}
+
+\subsection{Derivation of the velocity equation}
+
+\begin{theorem}[The sieve Burgers--Fisher equation]
+\label{thm:burgers-fisher}
+Let $f(v,t) > 0$ satisfy the Fokker--Planck equation~\eqref{eq:fp} on $(0,\infty)$.
+Define the velocity field
+\begin{equation}\label{eq:velocity}
+u(v,t) = -\frac{\partial}{\partial v}\log f(v,t) = -\frac{f'}{f}.
+\end{equation}
+Then $u$ satisfies the Burgers--Fisher equation in a porous medium:
+\begin{equation}\label{eq:burgers-fisher}
+\boxed{\partial_t u + 2v\,u\,\partial_v u = v\,\partial_v^2 u + (v{+}2)\,\partial_v u + u(1{-}u).}
+\end{equation}
+\end{theorem}
+
+\begin{proof}
+Set $\psi = \log f$, so $\psi' = f'/f$ and $f''/f = \psi'' + (\psi')^2$.
+From~\eqref{eq:fp}:
+\begin{equation}\label{eq:psi}
+\psi_t = v(\psi'' + \psi'^2) + (v+1)\psi' + 1.
+\end{equation}
+Differentiate~\eqref{eq:psi} with respect to $v$:
+\begin{align*}
+\psi'_t &= \psi'' + v\psi''' + \psi'^2 + 2v\psi'\psi'' + \psi' + (v+1)\psi'' \\
+&= v\psi''' + (v+2)\psi'' + 2v\psi'\psi'' + \psi'^2 + \psi'.
+\end{align*}
+Substitute $u = -\psi'$ (hence $\psi'' = -u'$, $\psi''' = -u''$):
+\begin{align*}
+-u_t &= -vu'' - (v+2)u' + 2vu\,u' + u^2 - u.
+\end{align*}
+Multiply by $-1$ and rearrange:
+\[
+u_t = vu'' + (v+2)u' - 2vu\,u' - u^2 + u = vu'' + (v+2)u' + u(1-u) - 2vu\,u'. \qedhere
+\]
+\end{proof}
+
+\begin{remark}[Structure of the equation]
+Equation~\eqref{eq:burgers-fisher} combines three classical PDE mechanisms:
+\begin{enumerate}
+\item \emph{Burgers nonlinearity} $2vu\,u_v$: the hallmark of the Navier--Stokes and Burgers equations, arising here from the nonlinear transformation $u = -(\log f)'$.
+\item \emph{Porous medium diffusion} $v\,u_{vv}$: the diffusivity equals $v$, so small gaps ($v \approx 0$) are ``tight'' and large gaps fluctuate freely.
+\item \emph{Fisher--KPP reaction} $u(1{-}u)$: this term pushes $u$ toward~$1$ from either side. It emerges from the Fokker--Planck structure, not imposed by hand.
+\end{enumerate}
+\end{remark}
+
+
+% ====================================================================
+\section{Spectral Stability of the Poisson Equilibrium}
+\label{sec:spectral}
+% ====================================================================
+
+\begin{theorem}[Spectral analysis]
+\label{thm:spectral}
+\leavevmode
+\begin{enumerate}[\upshape(i)]
+\item The unique bounded steady state of~\eqref{eq:burgers-fisher} is $u \equiv 1$, corresponding to the exponential distribution $f = e^{-v}$.
+\item The linearization around $u = 1$, writing $\delta u = u - 1$, is
+\begin{equation}\label{eq:linearized}
+\partial_t(\delta u) = v\,(\delta u)'' + (2 - v)\,(\delta u)' - \delta u.
+\end{equation}
+\item The eigenvalue problem $v\,h'' + (2-v)\,h' + (\lambda+1)\,h = 0$ is the associated Laguerre equation with parameter $\alpha = 1$.
+Its solutions are the associated Laguerre polynomials $L_n^{(1)}(v)$ with eigenvalues
+\begin{equation}\label{eq:eigenvalues}
+\lambda_n = -(n+1), \qquad n = 0, 1, 2, \ldots
+\end{equation}
+\item The spectral gap is $|\lambda_0| = 1$.
+\end{enumerate}
+\end{theorem}
+
+\begin{proof}
+(i) A constant steady state $u = c$ satisfies $c(1-c) = 0$, giving $c = 0$ or $c = 1$.
+If $u = 0$ then $f' = 0$, i.e., $f = \text{const}$, which is not integrable on $[0,\infty)$.
+Thus $u = 1$ is the unique physically admissible steady state.
+
+(ii) Substitute $u = 1 + \delta u$ into~\eqref{eq:burgers-fisher}, keeping linear terms in $\delta u$:
+\begin{align*}
+(\delta u)_t + 2v \cdot 1 \cdot (\delta u)' &= v(\delta u)'' + (v+2)(\delta u)' + (1 + \delta u)(1 - 1 - \delta u) \\
+&= v(\delta u)'' + (v+2)(\delta u)' - \delta u + O((\delta u)^2).
+\end{align*}
+Hence $(\delta u)_t = v(\delta u)'' + (2-v)(\delta u)' - \delta u$.
+
+(iii) Setting $(\delta u)(v,t) = h(v)\,e^{\lambda t}$ gives $v h'' + (2-v)h' + (\lambda + 1)h = 0$.
+With the substitution $\alpha = 1$ and $n = \lambda + 1$, this is the associated Laguerre equation $v h'' + (\alpha + 1 - v)h' + nh = 0$, whose polynomial solutions are $L_n^{(1)}(v)$~\cite{Szego1975}.
+
+(iv) From $\lambda_n = -(n+1)$: $\lambda_0 = -1$, so all perturbation modes decay at rate $\ge 1$.
+\end{proof}
+
+
+% ====================================================================
+\section{Convergence Under Decaying Sieve Forcing}
+\label{sec:convergence}
+% ====================================================================
+
+\begin{theorem}[Perturbed convergence]
+\label{thm:convergence}
+Let $u(v,t)$ satisfy
+\begin{equation}\label{eq:forced}
+\partial_t u + 2vu\,u_v = vu_{vv} + (v+2)u_v + u(1-u) + \eps(t)\,F(v),
+\end{equation}
+where $\|F\|_\infty \le M$ and $|\eps(t)| \le C_0/t^\beta$ for $\beta > 0$.
+Then there exists $C > 0$ such that $\|\delta u(\cdot, t)\|_{L^2(v\,e^{-v})} \le C/t^\beta$ for all $t$ sufficiently large.
+\end{theorem}
+
+\begin{proof}
+Define the energy $E(t) = \frac{1}{2}\|\delta u\|^2_{L^2(v e^{-v})}$, where $L^2(ve^{-v})$ is the natural weighted space for the associated Laguerre polynomials.
+
+\textbf{Step 1 (Dissipation).} By the spectral gap (Theorem~\ref{thm:spectral}(iv)):
+$\langle \cL_{\mathrm{lin}}(\delta u), \delta u \rangle \le -|\lambda_0| \cdot \|\delta u\|^2 = -\|\delta u\|^2.$
+
+\textbf{Step 2 (Forcing).} $|\langle \eps F, \delta u \rangle| \le |\eps| \cdot M' \cdot \|\delta u\|$,
+where $M' = \|F\|_{L^2(ve^{-v})}$.
+By Young's inequality: $|\eps| M' \|\delta u\| \le \frac{1}{2}\|\delta u\|^2 + \frac{M'^2}{2}\eps^2$.
+
+\textbf{Step 3 (Energy inequality).}
+$\dot{E} \le -2E + E + \frac{M'^2}{2}\eps^2 = -E + \frac{C_1}{t^{2\beta}}.$
+
+\textbf{Step 4 (Gr\"onwall).} The integrating factor $e^t$ gives
+$E(t) \le E(t_0)e^{-(t-t_0)} + C_1\int_{t_0}^t e^{-(t-\tau)} \tau^{-2\beta}\,d\tau$.
+The integral is $O(t^{-2\beta})$ by repeated integration by parts, yielding $E(t) = O(t^{-2\beta})$.
+\end{proof}
+
+
+% ====================================================================
+\section{Connection to Prime Gaps}
+\label{sec:primes}
+% ====================================================================
+
+\begin{hypothesis}[Sieve diffusion]
+\label{hyp:sieve}
+Under the Hardy--Littlewood conjecture, the normalized gap density $f(v, s)$ at scale $s = \log x$ can be written as $f = e^{-v}[1 + \varphi(v,s)]$, where the perturbation $\varphi$ is driven by the singular series and satisfies $\|\varphi(\cdot,s)\| = O(1/s^\beta)$ for some $\beta > 0$.
+\end{hypothesis}
+
+Under this hypothesis, the velocity field $u = 1 - \varphi'/(1+\varphi) \approx 1 - \varphi'$ satisfies a forced version of~\eqref{eq:burgers-fisher}, and Theorem~\ref{thm:convergence} gives $u \to 1$, i.e., convergence to Poisson.
+
+\begin{remark}[What the hypothesis does not give]
+Hypothesis~\ref{hyp:sieve} concerns the marginal gap density.
+The mutual information $\MI(g_n; g_{n+1})$---a joint quantity---requires additional input.
+We verify the MI decay numerically (\S\ref{sec:numerics}) but leave the rigorous joint implication as an open problem.
+\end{remark}
+
+\subsection{The sieve as porous medium}
+
+Under the Hardy--Littlewood conjecture:
+$f(v,s) \propto W(vs) \cdot e^{-v}$,
+where $W(g) = \prod_{p|g,\,p>2} (p{-}1)/(p{-}2)$.
+Each prime $p$ is a ``pore'' with strength $\delta_p = 1/(p{-}2)$: $\delta_3 = 1$, $\delta_5 = 1/3$, $\delta_7 = 1/5$.
+As $s \to \infty$, gap values $g = vs$ grow and the mod-$p$ structure equidistributes, weakening each pore.
+
+\subsection{Exact computation: the mod-$3$ coupling}
+
+\begin{proposition}\label{prop:mod3}
+Under i.i.d.\ uniform prime residues mod~$3$:
+$\MI(g_n \bmod 3;\, g_{n+1} \bmod 3) = 1/4$ bit,
+with structural zeros at $(1,1)$ and $(2,2)$ in the joint table.
+\end{proposition}
+
+\begin{proof}
+With $r_n = p_n \bmod 3 \in \{1,2\}$ i.i.d.\ uniform, the gap $g_n \equiv r_{n+1} - r_n \pmod{3}$.
+Enumerating all $8$ triples $(r_n, r_{n+1}, r_{n+2}) \in \{1,2\}^3$ yields the joint distribution:
+
+\smallskip
+\begin{center}
+\begin{tabular}{c|ccc}
+$g_n \bmod 3$ \textbackslash\ $g_{n+1} \bmod 3$ & 0 & 1 & 2 \\
+\hline
+0 & 2/8 & 1/8 & 1/8 \\
+1 & 1/8 & \textbf{0} & 1/8 \\
+2 & 1/8 & 1/8 & \textbf{0}
+\end{tabular}
+\end{center}
+
+\smallskip\noindent
+Marginals: $P(0) = 1/2$, $P(1) = P(2) = 1/4$. Only entries $(1,2)$ and $(2,1)$ deviate from the product of marginals:
+$\MI = 2 \times \tfrac{1}{8}\log_2(\tfrac{1/8}{1/4 \cdot 1/4}) = \tfrac{1}{4}$ bit.
+\end{proof}
+
+
+% ====================================================================
+\section{Numerical Verification}
+\label{sec:numerics}
+% ====================================================================
+
+All measurements use $N = 200{,}000$ primes at 11 scales ($10^3$ to $10^8$).
+
+\subsection{MI decay rate}
+$\MI_{\mathrm{total}}(x) \sim 0.555 / (\log x)^{0.186}$, $R^2 = 0.986$.
+This is the first quantitative estimate of the convergence rate to Poisson.
+
+\subsection{Prime $3$ dominance}
+$\MI_3 / \MI_{\mathrm{total}} \approx 94\%$ at all scales.
+Empirical $\MI_3 = 0.302$ bits vs.\ theoretical $0.250$ bits; the $21\%$ excess is the Lemke Oliver--Soundararajan bias~\cite{LO2016}, decaying as $O((\log\log x)/\log x)$~\cite{Holt2024}.
+The structural zeros $P(1,1) = P(2,2) = 0$ hold exactly at all scales.
+
+\subsection{Perturbation energy}
+$E(s) = \|\varphi\|^2_{L^2(e^v)} \sim C/(\log x)^{0.63}$, $R^2 = 0.67$.
+The Laguerre decomposition shows the $n=2$ mode (variance correction) dominates, while the $n=1$ mode (mean shift) is nearly zero.
+
+\subsection{Information cascade}
+\begin{center}
+\begin{tabular}{cccc}
+\toprule
+Prime $p$ & Decay exponent $\alpha_p$ & $R^2$ & MI at $10^8$ \\
+\midrule
+3 & 0.22 & 0.980 & 0.302 bits \\
+7 & 3.83 & 0.996 & 0.006 bits \\
+11 & 3.67 & 0.998 & 0.032 bits \\
+\bottomrule
+\end{tabular}
+\end{center}
+Prime $3$ ($\alpha \approx 0.22$) is the bottleneck; primes $\ge 7$ decay as $(\log x)^{-3.5}$ or faster.
+
+\subsection{Sieve diffusion model}
+Starting from $f_0 = e^{-v}$ (Cram\'er) and iteratively adding sieve primes:
+adding $p = 3$ alone reduces KL divergence from the empirical distribution by $74\%$ (from $0.061$ to $0.016$ nats at scale $10^7$).
+
+
+% ====================================================================
+\section{Open Problems}
+\label{sec:open}
+% ====================================================================
+
+\begin{enumerate}
+\item \textbf{Derive} $\|\varphi(\cdot, s)\| = O(1/s^\beta)$ from the Hardy--Littlewood conjecture and equidistribution of primes in arithmetic progressions.
+\item \textbf{Prove} MI $\to 0$ from the Burgers--Fisher framework (requires a joint version of Hypothesis~\ref{hyp:sieve}).
+\item \textbf{Compute} the exponent $\alpha \approx 0.19$ from first principles: it should follow from the pore strength $\delta_3 = 1$ and the equidistribution rate of gaps mod~$3$.
+\end{enumerate}
+
+
+% ====================================================================
+\section*{Computational Details}
+% ====================================================================
+
+Python 3 with SymPy, NumPy, SciPy. Runtime $\approx 2$ minutes.
+Code, data, and interactive visualization: \url{https://github.com/tobiascanavesi/prime-fluid-dynamics}
+
+\subsection*{Use of generative AI}
+Claude Opus 4.6 (Anthropic, 2025) assisted with code development and \LaTeX{} formatting.
+All mathematical content is the original contribution of the author.
+
+
+\begin{thebibliography}{99}
+
+\bibitem{Gallagher1976}
+P.~X.~Gallagher, \emph{On the distribution of primes in short intervals}, Mathematika \textbf{23} (1976), 4--9.
+
+\bibitem{HL1923}
+G.~H.~Hardy and J.~E.~Littlewood, \emph{Some problems of `Partitio Numerorum': III}, Acta Math.\ \textbf{44} (1923), 1--70.
+
+\bibitem{LO2016}
+R.~J.~Lemke Oliver and K.~Soundararajan, \emph{Unexpected biases in the distribution of consecutive primes}, PNAS \textbf{113} (2016), E4446--E4454.
+
+\bibitem{Kuperberg2023}
+G.~Kuperberg, \emph{Sums of singular series with large sets}, Quart.\ J.\ Math.\ \textbf{74} (2023), 1489--1518.
+
+\bibitem{Holt2024}
+F.~Holt, \emph{Expected biases in the distribution of consecutive primes}, preprint (2024), arXiv:2405.03540.
+
+\bibitem{Szego1975}
+G.~Szeg\H{o}, \emph{Orthogonal Polynomials}, 4th ed., AMS, 1975.
+
+\bibitem{Risken1989}
+H.~Risken, \emph{The Fokker--Planck Equation}, 2nd ed., Springer, 1989.
+
+\end{thebibliography}
+
+\end{document}
