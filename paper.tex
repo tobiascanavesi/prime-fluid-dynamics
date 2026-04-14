@@ -58,16 +58,19 @@ as $(\log x)^{-0.19}$ ($R^2 = 0.986$) and that prime $p = 3$ carries $94\%$ of t
 \section{Introduction}
 % ====================================================================
 
-Gallagher~\cite{Gallagher1976} proved, conditionally on the Hardy--Littlewood conjecture~\cite{HL1923}, that prime counts 
-in short intervals converge to Poisson statistics.
-Lemke Oliver and Soundararajan~\cite{LO2016} discovered biases in consecutive prime residues decaying 
-as $O((\log\log x)/\log x)$; Holt~\cite{Holt2024} modeled these biases via sieve dynamics.
-However, no quantitative convergence rate for the overall gap distribution to Poisson has been established.
+The sequence of prime numbers is entirely deterministic, sculpted by the rigid constraints of the sieve of Eratosthenes.
+Yet at macroscopic scales, the gaps between consecutive primes mimic a perfectly memoryless random process: Gallagher~\cite{Gallagher1976} proved conditionally on the Hardy--Littlewood conjecture~\cite{HL1923} that prime counts in short intervals converge to Poisson statistics, implying that normalized gaps approach the exponential distribution $f(v) = e^{-v}$.
+How does a system built on strict divisibility rules dissolve into statistical randomness?
 
-We construct a velocity field from the prime gap distribution and show it satisfies a nonlinear PDE whose 
-unique stable equilibrium is the Poisson regime.
-This provides both a mechanism (the spectral gap of a Laguerre-type operator) and, numerically, 
-a rate ($\approx (\log x)^{-0.19}$).
+While the \emph{destination} (Poisson) is conditionally established, the \emph{dynamics} of this convergence have remained obscure.
+Lemke Oliver and Soundararajan~\cite{LO2016} discovered that consecutive primes exhibit unexpected biases in their residue patterns---a signature of the sieve's lingering grip---decaying as $O((\log\log x)/\log x)$; Holt~\cite{Holt2024} modeled these biases via sieve dynamics.
+But no differential equation governing the transition, and no quantitative convergence rate, have been established.
+
+In this paper, we propose that the answer lies in the language of fluid mechanics.
+Rather than treating prime gaps as a static probability distribution, we transform the gap density into a \emph{velocity field} and model the system as a physical flow through a porous medium---the sieve.
+We show that if the gap density evolves under a Feller Fokker--Planck equation~\cite{CIR1985, Risken1989}---whose state-dependent diffusivity mirrors the arithmetic rigidity of small gaps---the resulting velocity field satisfies a nonlinear Burgers--Fisher equation~\cite{Fisher1937, KPP1937}.
+The Poisson regime is not a statistical coincidence but the unique stable equilibrium of this PDE, enforced by a spectral gap of~$1$ and a self-correcting Fisher--KPP reaction term $u(1-u)$ that emerges naturally from the Fokker--Planck structure.
+Numerical verification at 11 scales yields a decay rate of $\approx (\log x)^{-0.19}$, driven overwhelmingly by the prime $p = 3$.
 
 
 % ====================================================================
@@ -337,7 +340,7 @@ Prime $p$ & Decay exponent $\alpha_p$ & $R^2$ & MI at $10^8$ \\
 Prime $3$ ($\alpha \approx 0.22$) is the bottleneck; primes $\ge 7$ decay as $(\log x)^{-3.5}$ or faster.
 
 \subsection{Sieve diffusion model}
-Starting from $f_0 = e^{-v}$ (Cram\'er) and iteratively adding sieve primes:
+Starting from $f_0 = e^{-v}$ (the Cram\'er model~\cite{Cramer1936}) and iteratively adding sieve primes:
 adding $p = 3$ alone reduces KL divergence from the empirical distribution by $74\%$ 
 (from $0.061$ to $0.016$ nats at scale $10^7$).
 
@@ -433,6 +436,18 @@ T.~Tao, \emph{254A, Supplement 4: Probabilistic models and heuristics for the pr
 
 \bibitem{Talagrand2006}
 M.~Talagrand, \emph{The Parisi formula}, Ann.\ of Math.\ \textbf{163} (2006), 221--263.
+
+\bibitem{CIR1985}
+J.~C.~Cox, J.~E.~Ingersoll, and S.~A.~Ross, \emph{A theory of the term structure of interest rates}, Econometrica \textbf{53}(2) (1985), 385--407.
+
+\bibitem{Fisher1937}
+R.~A.~Fisher, \emph{The wave of advance of advantageous genes}, Ann.\ Eugenics \textbf{7}(4) (1937), 355--369.
+
+\bibitem{KPP1937}
+A.~N.~Kolmogorov, I.~G.~Petrovsky, and N.~S.~Piskunov, \emph{\'Etude de l'\'equation de la diffusion avec croissance de la quantit\'e de mati\`ere et son application \`a un probl\`eme biologique}, Bull.\ Univ.\ Moscou, S\'er.\ Int., Sect.~A \textbf{1}(6) (1937), 1--25.
+
+\bibitem{Cramer1936}
+H.~Cram\'er, \emph{On the order of magnitude of the difference between consecutive prime numbers}, Acta Arith.\ \textbf{2} (1936), 23--46.
 
 \end{thebibliography}
 
