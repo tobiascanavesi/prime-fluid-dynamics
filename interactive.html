@@ -193,11 +193,12 @@ Think of water flowing through sandstone. Sandstone is full of tiny pores &mdash
 </div>
 <canvas id="porousCanvas" height="320" style="background:#0d1321;border-radius:8px"></canvas>
 <p style="color:var(--muted);font-size:.82rem;margin-top:8px">
-<span style="color:var(--accent2)">Pink walls</span> = pore at p=3 (strongest).
-<span style="color:var(--accent3)">Purple walls</span> = pore at p=5.
-<span style="color:var(--muted)">Gray walls</span> = pore at p=7.
-<span style="color:var(--gold)">Gold dots</span> = probability particles.
-As the scale increases, the walls shrink and the flow becomes uniform.
+<span style="color:var(--accent2)">Pink circles</span> = obstacles from prime 3 (biggest boulders, strongest constraint).
+<span style="color:var(--accent3)">Purple circles</span> = prime 5 (smaller rocks).
+<span style="color:#64748b">Gray circles</span> = prime 7 (pebbles).
+<span style="color:var(--gold)">Gold particles</span> = probability flowing through the sieve.
+The particles curve around obstacles like water around rocks in a riverbed.
+As you increase the scale, the obstacles shrink &mdash; the sieve loosens its grip &mdash; and the flow straightens out toward uniform (Poisson).
 </p>
 </div>
 
@@ -535,7 +536,7 @@ new Chart(document.getElementById('cascadeChart'), {
 
 
 // ============================================================
-// Porous Medium Simulation
+// Porous Medium Simulation — circular obstacles (real fluid dynamics)
 // ============================================================
 let porousAnim = null;
 function startPorous() {
@@ -544,119 +545,174 @@ function startPorous() {
   const ctx = canvas.getContext('2d');
   const W = canvas.width = canvas.offsetWidth * 2;
   const H = canvas.height = 640;
-  const nParticles = 120;
+  const nParticles = 150;
+
+  // Build obstacle field: rows of circular obstacles for each sieve prime.
+  // Prime p creates obstacles spaced vertically with period ~H/p,
+  // at a specific x-band. Radius proportional to pore strength.
+  function buildObstacles(scalePow) {
+    const decay = 0.35 + scalePow * 0.065; // obstacles shrink with scale
+    const obs = [];
+    const primeData = [
+      { p: 3, baseR: 38, color: '#f472b6', xBand: 0.20, nObs: 5 },
+      { p: 3, baseR: 34, color: '#f472b6', xBand: 0.30, nObs: 4 },
+      { p: 5, baseR: 22, color: '#a78bfa', xBand: 0.48, nObs: 5 },
+      { p: 5, baseR: 18, color: '#a78bfa', xBand: 0.56, nObs: 4 },
+      { p: 7, baseR: 14, color: '#64748b', xBand: 0.72, nObs: 5 },
+      { p: 7, baseR: 12, color: '#64748b', xBand: 0.78, nObs: 6 },
+    ];
+    for (const pd of primeData) {
+      const r = Math.max(0, pd.baseR / decay);
+      for (let i = 0; i < pd.nObs; i++) {
+        const yOff = (pd.nObs % 2 === 0) ? 0.5 : 0;
+        obs.push({
+          x: pd.xBand * W,
+          y: ((i + yOff) / pd.nObs) * H * 0.85 + H * 0.075,
+          r: r,
+          color: pd.color,
+          prime: pd.p,
+        });
+      }
+    }
+    return obs;
+  }
 
   let particles = [];
-  for (let i = 0; i < nParticles; i++) {
-    particles.push({
-      x: Math.random() * W * 0.08,
-      y: H * 0.1 + Math.random() * H * 0.8,
-      vx: 1.5 + Math.random() * 2,
-      vy: (Math.random() - 0.5) * 2,
-      trail: []
-    });
+  function resetParticles() {
+    particles = [];
+    for (let i = 0; i < nParticles; i++) {
+      particles.push({
+        x: Math.random() * W * 0.06,
+        y: H * 0.05 + Math.random() * H * 0.9,
+        vx: 1.8 + Math.random() * 1.5,
+        vy: 0,
+        trail: []
+      });
+    }
   }
-
-  function getScale() {
-    return parseFloat(document.getElementById('porousSlider').value);
-  }
+  resetParticles();
 
   function frame() {
-    const k = getScale();
+    const k = parseFloat(document.getElementById('porousSlider').value);
     document.getElementById('porousVal').innerHTML = `10<sup>${k%1===0?k:k.toFixed(1)}</sup>`;
-    const poreDecay = Math.pow(k * Math.LN10, 0.25); // pores shrink with scale
+    const obstacles = buildObstacles(k);
 
     ctx.clearRect(0, 0, W, H);
 
-    // Draw pores (walls that narrow the channel)
-    const pores = [
-      { x: W * 0.25, prime: 3, color: '#f472b6', strength: 1.0 },
-      { x: W * 0.50, prime: 5, color: '#a78bfa', strength: 1/3 },
-      { x: W * 0.75, prime: 7, color: '#475569', strength: 1/5 },
-    ];
-
-    for (const pore of pores) {
-      const gap = H * (1 - pore.strength / poreDecay); // gap opening grows with scale
-      const wallH = Math.max(0, (H - gap) / 2);
-      // Top wall
-      ctx.fillStyle = pore.color + '55';
-      ctx.fillRect(pore.x - 12, 0, 24, wallH);
-      // Bottom wall
-      ctx.fillRect(pore.x - 12, H - wallH, 24, wallH);
-      // Pore edges (brighter)
-      ctx.fillStyle = pore.color;
-      ctx.fillRect(pore.x - 3, wallH - 6, 6, 12);
-      ctx.fillRect(pore.x - 3, H - wallH - 6, 6, 12);
-      // Label
-      ctx.fillStyle = pore.color;
-      ctx.font = 'bold 20px sans-serif';
-      ctx.fillText(`p=${pore.prime}`, pore.x - 18, 22);
+    // Draw obstacles as circles with glow
+    for (const ob of obstacles) {
+      if (ob.r < 1) continue;
+      // Soft glow
+      const grad = ctx.createRadialGradient(ob.x, ob.y, ob.r * 0.3, ob.x, ob.y, ob.r * 1.8);
+      grad.addColorStop(0, ob.color + '30');
+      grad.addColorStop(1, 'transparent');
+      ctx.fillStyle = grad;
+      ctx.beginPath(); ctx.arc(ob.x, ob.y, ob.r * 1.8, 0, Math.PI * 2); ctx.fill();
+      // Solid circle
+      ctx.fillStyle = ob.color + '88';
+      ctx.beginPath(); ctx.arc(ob.x, ob.y, ob.r, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = ob.color;
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
     }
 
-    // Update particles
-    for (const p of particles) {
-      // Base flow: rightward
-      p.x += p.vx;
-      p.y += p.vy;
+    // Labels for prime columns
+    ctx.font = 'bold 22px sans-serif';
+    ctx.fillStyle = '#f472b6'; ctx.fillText('p = 3', W * 0.22, 28);
+    ctx.fillStyle = '#a78bfa'; ctx.fillText('p = 5', W * 0.49, 28);
+    ctx.fillStyle = '#64748b'; ctx.fillText('p = 7', W * 0.73, 28);
 
-      // Pore interactions: deflect particles near walls
-      for (const pore of pores) {
-        const wallH = Math.max(0, (H - H * (1 - pore.strength / poreDecay)) / 2);
-        if (Math.abs(p.x - pore.x) < 20) {
-          // Push toward center if near walls
-          if (p.y < wallH + 10) { p.vy += 1.5; p.y = wallH + 10; }
-          if (p.y > H - wallH - 10) { p.vy -= 1.5; p.y = H - wallH - 10; }
-          // Slow down at pore
-          p.vx *= 0.95;
+    // Update particles — potential flow deflection around circular obstacles
+    for (const pt of particles) {
+      let fx = 0, fy = 0;
+      for (const ob of obstacles) {
+        if (ob.r < 1) continue;
+        const dx = pt.x - ob.x;
+        const dy = pt.y - ob.y;
+        const dist2 = dx * dx + dy * dy;
+        const dist = Math.sqrt(dist2);
+        const R = ob.r + 4; // interaction radius slightly larger than visual
+
+        if (dist < R * 3) {
+          // Potential flow around cylinder: add dipole repulsion
+          // The dipole pushes the particle tangentially around the obstacle
+          const strength = R * R / Math.max(dist2, R * R * 0.25);
+          fx += dx * strength * 1.2;
+          fy += dy * strength * 1.2;
+
+          // Hard repulsion if inside obstacle
+          if (dist < R) {
+            const push = (R - dist) * 0.5;
+            fx += (dx / dist) * push;
+            fy += (dy / dist) * push;
+          }
         }
       }
 
-      // Boundary: bounce off top/bottom
-      if (p.y < 5) { p.y = 5; p.vy = Math.abs(p.vy); }
-      if (p.y > H - 5) { p.y = H - 5; p.vy = -Math.abs(p.vy); }
+      // Apply forces
+      pt.vx += fx * 0.15;
+      pt.vy += fy * 0.15;
 
-      // Random jitter
-      p.vy += (Math.random() - 0.5) * 0.8;
-      p.vy *= 0.96; // damping
-      p.vx = Math.max(0.5, Math.min(p.vx + 0.05, 3.5));
+      // Base rightward drift
+      pt.vx += 0.08;
 
-      // Wrap around
-      if (p.x > W) { p.x = 0; p.y = H * 0.1 + Math.random() * H * 0.8; }
+      // Damping
+      pt.vx = Math.max(0.3, Math.min(pt.vx * 0.97, 5));
+      pt.vy *= 0.94;
+
+      // Small random jitter (Brownian)
+      pt.vy += (Math.random() - 0.5) * 0.3;
+
+      // Move
+      pt.x += pt.vx;
+      pt.y += pt.vy;
+
+      // Boundary
+      if (pt.y < 4) { pt.y = 4; pt.vy = Math.abs(pt.vy) * 0.5; }
+      if (pt.y > H - 4) { pt.y = H - 4; pt.vy = -Math.abs(pt.vy) * 0.5; }
+
+      // Wrap
+      if (pt.x > W + 10) {
+        pt.x = -5;
+        pt.y = H * 0.05 + Math.random() * H * 0.9;
+        pt.vx = 1.8 + Math.random() * 1.5;
+        pt.vy = 0;
+        pt.trail = [];
+      }
 
       // Trail
-      p.trail.push({ x: p.x, y: p.y });
-      if (p.trail.length > 40) p.trail.shift();
+      pt.trail.push({ x: pt.x, y: pt.y });
+      if (pt.trail.length > 50) pt.trail.shift();
     }
 
-    // Draw trails
-    for (const p of particles) {
-      for (let i = 1; i < p.trail.length; i++) {
-        const alpha = (i / p.trail.length) * 0.4;
-        ctx.strokeStyle = `rgba(251,191,36,${alpha})`;
-        ctx.lineWidth = 1.5;
-        ctx.beginPath();
-        ctx.moveTo(p.trail[i-1].x, p.trail[i-1].y);
-        ctx.lineTo(p.trail[i].x, p.trail[i].y);
-        ctx.stroke();
-      }
-      // Current position
-      ctx.fillStyle = '#fbbf24';
+    // Draw particle trails (streamlines)
+    for (const pt of particles) {
+      if (pt.trail.length < 2) continue;
       ctx.beginPath();
-      ctx.arc(p.x, p.y, 3, 0, 7);
-      ctx.fill();
+      ctx.moveTo(pt.trail[0].x, pt.trail[0].y);
+      for (let i = 1; i < pt.trail.length; i++) {
+        ctx.lineTo(pt.trail[i].x, pt.trail[i].y);
+      }
+      ctx.strokeStyle = 'rgba(251,191,36,0.25)';
+      ctx.lineWidth = 1.2;
+      ctx.stroke();
+      // Head
+      const last = pt.trail[pt.trail.length - 1];
+      ctx.fillStyle = '#fbbf24';
+      ctx.beginPath(); ctx.arc(last.x, last.y, 2.5, 0, 7); ctx.fill();
     }
 
-    // Labels
+    // Flow arrow and exit label
     ctx.fillStyle = '#94a3b8';
     ctx.font = '18px sans-serif';
-    ctx.fillText('Flow \u2192', W * 0.02, H - 12);
-    ctx.fillText('Uniform exit = Poisson', W * 0.82, H - 12);
+    ctx.fillText('Flow \u2192', W * 0.02, H - 10);
+    ctx.fillStyle = '#fbbf2488';
+    ctx.fillText('Smooth exit = Poisson', W * 0.82, H - 10);
 
     porousAnim = requestAnimationFrame(frame);
   }
   frame();
 }
-document.getElementById('porousSlider').addEventListener('input', () => {});
 startPorous();
 
 // ============================================================
