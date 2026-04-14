@@ -62,8 +62,9 @@ footer a{color:var(--accent)}
 <body>
 
 <header>
-<h1>A Burgers-Fisher Equation<br>for Prime Gaps</h1>
-<p class="sub">How we turned a 2,300-year-old sieve into a fluid dynamics problem &mdash; and found an equation that models why prime gaps approach randomness</p>
+<h1>The Fluid Dynamics<br>of Prime Numbers</h1>
+<p class="sub">Prime numbers are completely deterministic &mdash; yet their gaps behave like random events.
+We discovered a hidden equation, borrowed from physics, that explains why.</p>
 <p class="author">Tobias Canavesi &middot; April 2026</p>
 </header>
 
@@ -157,62 +158,88 @@ footer a{color:var(--accent)}
 
 <!-- =========================================================== -->
 <section id="physics"><div class="c">
-<h2>The Physics Idea</h2>
-<p class="sub2">Thinking backwards: what if the answer IS the equation?</p>
+<h2>The Porous Medium</h2>
+<p class="sub2">The sieve is not just an algorithm &mdash; it's a physical landscape</p>
 
-<p>Here's how we approached the problem. In physics, we sometimes work backwards: if we know the answer (the exponential distribution), can we find an equation whose solution IS that answer?</p>
+<p>Here is the central insight of our work. The sieve of Eratosthenes doesn't just <em>find</em> primes &mdash; it creates a <span class="hi">physical landscape</span> that shapes the gaps between them. Imagine the number line as a pipe through which a fluid (probability) flows. The sieve creates <span class="hi2">constrictions</span> &mdash; narrow points in the pipe &mdash; at each small prime number.</p>
 
-<div class="card" style="border-color:var(--gold)">
-<h3 style="color:var(--gold)">Step 1: The target is known</h3>
-<p>We want the gap distribution to be f(v) = e<sup>-v</sup> (exponential = Poisson). This is our "equilibrium" &mdash; the smooth lake we're aiming for. The chart below shows this target: most gaps are near or below the average (v&nbsp;&lt;&nbsp;1), large gaps are exponentially rare.</p>
-<canvas id="targetChart" height="200"></canvas>
+<div class="analogy">
+Think of water flowing through sandstone. Sandstone is full of tiny pores &mdash; holes that the water must squeeze through. Some pores are tight (hard to pass), others are wide open. The tighter the pores, the more the sandstone controls the water's behavior. The sieve of Eratosthenes is the sandstone of the primes: each small prime number creates a pore that constrains which gaps are allowed.
 </div>
 
+<div class="card" style="border-color:var(--accent2)">
+<h3 style="color:var(--accent2)">The pores and their strengths</h3>
+<p>Each small prime p creates a "pore" with a specific strength, determined by the <em>Hardy-Littlewood singular series</em> (a formula from 1923 that predicts how likely each gap size is). The strength measures how much prime p distorts the gap distribution away from randomness:</p>
+
+<div class="stat-row">
+<div class="stat"><div class="v" style="color:var(--accent2)">p = 3</div><div class="l">Strength: 1.0<br>The tightest pore &mdash;<br>makes gaps divisible by 3<br>(like 6, 12, 18) <strong>twice</strong><br>as common as expected</div></div>
+<div class="stat"><div class="v" style="color:var(--accent3)">p = 5</div><div class="l">Strength: 1/3<br>Much weaker &mdash;<br>a mild preference for<br>gaps divisible by 5</div></div>
+<div class="stat"><div class="v">p = 7</div><div class="l">Strength: 1/5<br>Weaker still</div></div>
+<div class="stat"><div class="v" style="color:var(--muted)">p = 11+</div><div class="l">Nearly zero<br>Wide open &mdash;<br>barely matters</div></div>
+</div>
+
+<p>The crucial observation: <span class="hig">the pores open as primes get larger</span>. Near the prime 7, a gap of 6 is "big" and feels the full force of the pore at p&nbsp;=&nbsp;3. Near the prime 10<sup>8</sup>, a gap of 6 is tiny compared to the average gap (~18), and the constraint from p&nbsp;=&nbsp;3 washes out. The sandstone slowly dissolves.</p>
+</div>
+
+<p>Watch this in action. The simulation below shows <span class="hi">particles (representing gap probabilities) flowing through pores</span>. The pores are the constrictions from small primes. As you increase the scale (making primes larger), the pores widen, and the flow becomes smoother &mdash; approaching the uniform, random flow of a Poisson process.</p>
+
+<div class="card" style="border-color:var(--gold)">
+<h3 style="color:var(--gold)">Porous Medium Simulation</h3>
+<p style="color:var(--muted);font-size:.85rem;margin-bottom:8px">Particles flow left to right through pores created by primes 3, 5, and 7. Drag the <strong>Scale</strong> slider to see the pores widen as primes get larger.</p>
+<div class="slider-row">
+<label>Scale (10<sup>k</sup>):</label>
+<input type="range" id="porousSlider" min="1" max="10" value="2" step="0.5">
+<span class="val" id="porousVal">10<sup>2</sup></span>
+</div>
+<canvas id="porousCanvas" height="320" style="background:#0d1321;border-radius:8px"></canvas>
+<p style="color:var(--muted);font-size:.82rem;margin-top:8px">
+<span style="color:var(--accent2)">Pink walls</span> = pore at p=3 (strongest).
+<span style="color:var(--accent3)">Purple walls</span> = pore at p=5.
+<span style="color:var(--muted)">Gray walls</span> = pore at p=7.
+<span style="color:var(--gold)">Gold dots</span> = probability particles.
+As the scale increases, the walls shrink and the flow becomes uniform.
+</p>
+</div>
+
+<h3 style="color:var(--text);margin:28px 0 14px">From landscape to equation</h3>
+
+<p>This porous medium picture isn't just a metaphor &mdash; it leads directly to mathematics. We modeled the gap distribution as a fluid in this landscape using a process called <span class="hi">Feller diffusion</span>. It has two key properties that match the sieve perfectly:</p>
+
+<div class="card">
+<h3>Property 1: Mean-reversion</h3>
+<p>Gaps are pulled toward the average. If a gap is unusually large, the next one tends to be smaller, and vice versa. In our model, this is the <em>drift toward V&nbsp;=&nbsp;1</em> (the normalized average gap).</p>
+</div>
+<div class="card">
+<h3>Property 2: State-dependent noise</h3>
+<p>Small gaps barely fluctuate &mdash; only g&nbsp;=&nbsp;2,&nbsp;4,&nbsp;6 are common, so there's almost no randomness. Large gaps fluctuate wildly. In our model, the noise is proportional to &radic;V: <span class="hi2">quiet near zero, loud at large values</span>. This IS the porous medium &mdash; tight pores near the origin, wide open at large gap sizes.</p>
+</div>
+
+<p>Watch the Feller diffusion in action: 80 particles released from different starting points all settle into the exponential distribution &mdash; the Poisson target.</p>
+
 <div class="card" style="border-color:var(--accent)">
-<h3 style="color:var(--accent)">Step 2: Find a process whose equilibrium is Exp(1)</h3>
-<p>The <span class="hi">Feller diffusion</span> dV&nbsp;=&nbsp;(1-V)dt&nbsp;+&nbsp;&radic;(2V)dW is a random particle that:</p>
-<ul style="margin:6px 0 12px 20px">
-<li><strong>Drifts toward V = 1</strong> (the average gap) &mdash; if V is too high, it gets pulled down; too low, pulled up</li>
-<li><strong>Has noise proportional to &radic;V</strong> &mdash; near V&nbsp;=&nbsp;0 (tiny gaps), the particle barely fluctuates; at V&nbsp;=&nbsp;3 (large gaps), it bounces wildly</li>
-</ul>
-<p>Watch it live: many particles released from different starting points all converge to the exponential distribution. Click <strong>Reset</strong> to restart.</p>
-<canvas id="fellerCanvas" height="280" style="background:#0d1321;border-radius:8px;cursor:pointer"></canvas>
+<canvas id="fellerCanvas" height="280" style="background:#0d1321;border-radius:8px"></canvas>
 <div style="display:flex;gap:10px;margin-top:8px">
 <button onclick="startFeller()" style="background:var(--accent);color:var(--bg);border:none;padding:6px 18px;border-radius:6px;cursor:pointer;font-weight:600">Reset</button>
 <span style="color:var(--muted);font-size:.82rem;display:flex;align-items:center">Left: particle paths over time &nbsp;|&nbsp; Right: histogram converges to e<sup>-v</sup></span>
 </div>
 </div>
 
-<div class="card" style="border-color:var(--accent2)">
-<h3 style="color:var(--accent2)">Step 3: Change the viewpoint &mdash; from density to velocity</h3>
-<p>Instead of tracking the probability density f(v), we define a <em>velocity field</em> u&nbsp;=&nbsp;-d/dv[log&nbsp;f]. This transforms the problem from probability into fluid dynamics.</p>
-<p>See it in action: the <span style="color:var(--accent)">blue curve</span> is the density f(v), the <span style="color:var(--accent2)">pink curve</span> is the velocity u(v) derived from it. When f is exactly exponential, u is exactly 1 (flat line). Any bump in f creates a ripple in u.</p>
+<h3 style="color:var(--text);margin:28px 0 14px">From density to velocity: studying the current, not the water level</h3>
+
+<p>Instead of tracking the probability density f(v), we take its <em>logarithmic gradient</em> to define a <span class="hi">velocity field</span> u&nbsp;=&nbsp;-d/dv[log&nbsp;f]. This is like studying the <em>current</em> in a river rather than the water level.</p>
+<p>The <span style="color:var(--accent)">blue curve</span> below is the density f(v), the <span style="color:var(--accent2)">pink curve</span> is the velocity u(v). When f is exactly exponential, u is exactly 1 everywhere &mdash; perfectly uniform flow. The sieve creates ripples.</p>
 <canvas id="transformChart" height="220"></canvas>
 <div class="slider-row">
 <label>Sieve strength:</label>
 <input type="range" id="sieveSlider" min="0" max="100" value="60" step="1">
 <span class="val" id="sieveVal">0.60</span>
 </div>
-<p style="color:var(--muted);font-size:.82rem">Slide left for pure Poisson (no sieve), right for strong sieve (small primes). Watch how the velocity field develops ripples.</p>
+<p style="color:var(--muted);font-size:.82rem">Slide left for pure Poisson (no sieve), right for strong sieve. Watch the velocity field develop ripples.</p>
+
+<div class="finding">
+<strong>The key step:</strong> We then computed, by exact algebra (verified in three independent computer algebra systems), what equation this velocity field satisfies. The result is the Burgers-Fisher equation &mdash; described in the next section.
 </div>
 
-<div class="card" style="border-color:var(--accent3)">
-<h3 style="color:var(--accent3)">Step 4: Discover the equation</h3>
-<p>Compute what equation u satisfies. The result, derived by exact algebra (verified symbolically in three computer algebra systems), is the <span class="hi">Burgers-Fisher equation</span> &mdash; a genuine Navier-Stokes-type PDE with a self-correcting reaction term. Details in the next section.</p>
-</div>
-
-<div class="analogy">Imagine you find a perfectly smooth lake (the exponential distribution). You want to understand how rivers converge to it. Instead of studying the water level (the density f), you study the <em>current</em> (the velocity u). The current tells you where the water is flowing and how fast it's approaching equilibrium. We did the same thing with prime gaps: we studied the "current" instead of the "water level."</div>
-
-<p>The physics analogy is deeper than metaphor. The sieve of Eratosthenes acts as a <span class="hi">porous medium</span> &mdash; a material full of tiny holes (like a sponge or sandstone) that fluid flows through. Each small prime p creates a "pore":</p>
-
-<div class="stat-row">
-<div class="stat"><div class="v" style="color:var(--accent2)">p = 3</div><div class="l">Pore strength: 1.0<br>(the tightest constriction)</div></div>
-<div class="stat"><div class="v" style="color:var(--accent3)">p = 5</div><div class="l">Pore strength: 1/3<br>(much weaker)</div></div>
-<div class="stat"><div class="v">p = 7</div><div class="l">Pore strength: 1/5<br>(weaker still)</div></div>
-<div class="stat"><div class="v" style="color:var(--muted)">p = 11+</div><div class="l">Negligible<br>(wide open)</div></div>
-</div>
-
-<p>As primes get larger, the gap values grow too. A gap of 6 near the prime 7 is "small" and tightly constrained by the pores. But a gap of 6 near the prime 10<sup>8</sup> is tiny compared to the average gap (~18), and the pore constraints wash out. <span class="hig">The pores open as the scale grows.</span></p>
 </div></section>
 
 <!-- =========================================================== -->
@@ -508,32 +535,132 @@ new Chart(document.getElementById('cascadeChart'), {
 
 
 // ============================================================
-// Step 1: Target distribution chart
+// Porous Medium Simulation
 // ============================================================
-(() => {
-  const labels = [], fv = [];
-  for (let vi = 0; vi <= 5; vi += 0.05) {
-    labels.push(vi.toFixed(2));
-    fv.push(Math.exp(-vi));
+let porousAnim = null;
+function startPorous() {
+  if (porousAnim) cancelAnimationFrame(porousAnim);
+  const canvas = document.getElementById('porousCanvas');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width = canvas.offsetWidth * 2;
+  const H = canvas.height = 640;
+  const nParticles = 120;
+
+  let particles = [];
+  for (let i = 0; i < nParticles; i++) {
+    particles.push({
+      x: Math.random() * W * 0.08,
+      y: H * 0.1 + Math.random() * H * 0.8,
+      vx: 1.5 + Math.random() * 2,
+      vy: (Math.random() - 0.5) * 2,
+      trail: []
+    });
   }
-  new Chart(document.getElementById('targetChart'), {
-    type: 'line',
-    data: { labels, datasets: [{
-      label: 'f(v) = e^{-v} (the Poisson target)',
-      data: fv, borderColor: '#fbbf24', backgroundColor: 'rgba(251,191,36,0.1)',
-      borderWidth: 2, pointRadius: 0, fill: true, tension: .3
-    }]},
-    options: { responsive: true, plugins: { legend: { labels: { color: '#e2e8f0' } } },
-      scales: {
-        x: { title: { display: true, text: 'v = normalized gap', color: '#94a3b8' }, ticks: { color: '#94a3b8', maxTicksLimit: 10 }, grid: { color: '#334155' } },
-        y: { title: { display: true, text: 'Probability density', color: '#94a3b8' }, ticks: { color: '#94a3b8' }, grid: { color: '#334155' } }
-      }
+
+  function getScale() {
+    return parseFloat(document.getElementById('porousSlider').value);
+  }
+
+  function frame() {
+    const k = getScale();
+    document.getElementById('porousVal').innerHTML = `10<sup>${k%1===0?k:k.toFixed(1)}</sup>`;
+    const poreDecay = Math.pow(k * Math.LN10, 0.25); // pores shrink with scale
+
+    ctx.clearRect(0, 0, W, H);
+
+    // Draw pores (walls that narrow the channel)
+    const pores = [
+      { x: W * 0.25, prime: 3, color: '#f472b6', strength: 1.0 },
+      { x: W * 0.50, prime: 5, color: '#a78bfa', strength: 1/3 },
+      { x: W * 0.75, prime: 7, color: '#475569', strength: 1/5 },
+    ];
+
+    for (const pore of pores) {
+      const gap = H * (1 - pore.strength / poreDecay); // gap opening grows with scale
+      const wallH = Math.max(0, (H - gap) / 2);
+      // Top wall
+      ctx.fillStyle = pore.color + '55';
+      ctx.fillRect(pore.x - 12, 0, 24, wallH);
+      // Bottom wall
+      ctx.fillRect(pore.x - 12, H - wallH, 24, wallH);
+      // Pore edges (brighter)
+      ctx.fillStyle = pore.color;
+      ctx.fillRect(pore.x - 3, wallH - 6, 6, 12);
+      ctx.fillRect(pore.x - 3, H - wallH - 6, 6, 12);
+      // Label
+      ctx.fillStyle = pore.color;
+      ctx.font = 'bold 20px sans-serif';
+      ctx.fillText(`p=${pore.prime}`, pore.x - 18, 22);
     }
-  });
-})();
+
+    // Update particles
+    for (const p of particles) {
+      // Base flow: rightward
+      p.x += p.vx;
+      p.y += p.vy;
+
+      // Pore interactions: deflect particles near walls
+      for (const pore of pores) {
+        const wallH = Math.max(0, (H - H * (1 - pore.strength / poreDecay)) / 2);
+        if (Math.abs(p.x - pore.x) < 20) {
+          // Push toward center if near walls
+          if (p.y < wallH + 10) { p.vy += 1.5; p.y = wallH + 10; }
+          if (p.y > H - wallH - 10) { p.vy -= 1.5; p.y = H - wallH - 10; }
+          // Slow down at pore
+          p.vx *= 0.95;
+        }
+      }
+
+      // Boundary: bounce off top/bottom
+      if (p.y < 5) { p.y = 5; p.vy = Math.abs(p.vy); }
+      if (p.y > H - 5) { p.y = H - 5; p.vy = -Math.abs(p.vy); }
+
+      // Random jitter
+      p.vy += (Math.random() - 0.5) * 0.8;
+      p.vy *= 0.96; // damping
+      p.vx = Math.max(0.5, Math.min(p.vx + 0.05, 3.5));
+
+      // Wrap around
+      if (p.x > W) { p.x = 0; p.y = H * 0.1 + Math.random() * H * 0.8; }
+
+      // Trail
+      p.trail.push({ x: p.x, y: p.y });
+      if (p.trail.length > 40) p.trail.shift();
+    }
+
+    // Draw trails
+    for (const p of particles) {
+      for (let i = 1; i < p.trail.length; i++) {
+        const alpha = (i / p.trail.length) * 0.4;
+        ctx.strokeStyle = `rgba(251,191,36,${alpha})`;
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(p.trail[i-1].x, p.trail[i-1].y);
+        ctx.lineTo(p.trail[i].x, p.trail[i].y);
+        ctx.stroke();
+      }
+      // Current position
+      ctx.fillStyle = '#fbbf24';
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, 3, 0, 7);
+      ctx.fill();
+    }
+
+    // Labels
+    ctx.fillStyle = '#94a3b8';
+    ctx.font = '18px sans-serif';
+    ctx.fillText('Flow \u2192', W * 0.02, H - 12);
+    ctx.fillText('Uniform exit = Poisson', W * 0.82, H - 12);
+
+    porousAnim = requestAnimationFrame(frame);
+  }
+  frame();
+}
+document.getElementById('porousSlider').addEventListener('input', () => {});
+startPorous();
 
 // ============================================================
-// Step 2: Feller diffusion live simulation
+// Feller diffusion live simulation
 // ============================================================
 let fellerAnim = null;
 function startFeller() {
