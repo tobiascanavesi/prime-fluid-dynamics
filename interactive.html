@@ -551,18 +551,21 @@ function startPorous() {
   // Prime p creates obstacles spaced vertically with period ~H/p,
   // at a specific x-band. Radius proportional to pore strength.
   function buildObstacles(scalePow) {
-    const decay = 0.35 + scalePow * 0.065; // obstacles shrink with scale
+    // scalePow goes from 1 to 10. At 1: full size. At 10: virtually gone.
+    // Use exponential decay so obstacles vanish convincingly.
+    const shrink = Math.exp(-0.35 * (scalePow - 1)); // 1.0 at k=1, ~0.04 at k=10
     const obs = [];
     const primeData = [
-      { p: 3, baseR: 38, color: '#f472b6', xBand: 0.20, nObs: 5 },
-      { p: 3, baseR: 34, color: '#f472b6', xBand: 0.30, nObs: 4 },
-      { p: 5, baseR: 22, color: '#a78bfa', xBand: 0.48, nObs: 5 },
-      { p: 5, baseR: 18, color: '#a78bfa', xBand: 0.56, nObs: 4 },
-      { p: 7, baseR: 14, color: '#64748b', xBand: 0.72, nObs: 5 },
-      { p: 7, baseR: 12, color: '#64748b', xBand: 0.78, nObs: 6 },
+      { p: 3, baseR: 36, color: '#f472b6', xBand: 0.20, nObs: 5 },
+      { p: 3, baseR: 32, color: '#f472b6', xBand: 0.30, nObs: 4 },
+      { p: 5, baseR: 20, color: '#a78bfa', xBand: 0.48, nObs: 5 },
+      { p: 5, baseR: 16, color: '#a78bfa', xBand: 0.56, nObs: 4 },
+      { p: 7, baseR: 12, color: '#64748b', xBand: 0.72, nObs: 5 },
+      { p: 7, baseR: 10, color: '#64748b', xBand: 0.78, nObs: 6 },
     ];
     for (const pd of primeData) {
-      const r = Math.max(0, pd.baseR / decay);
+      const r = pd.baseR * shrink;
+      if (r < 0.5) continue; // skip invisible obstacles
       for (let i = 0; i < pd.nObs; i++) {
         const yOff = (pd.nObs % 2 === 0) ? 0.5 : 0;
         obs.push({
@@ -616,11 +619,17 @@ function startPorous() {
       ctx.stroke();
     }
 
-    // Labels for prime columns
-    ctx.font = 'bold 22px sans-serif';
-    ctx.fillStyle = '#f472b6'; ctx.fillText('p = 3', W * 0.22, 28);
-    ctx.fillStyle = '#a78bfa'; ctx.fillText('p = 5', W * 0.49, 28);
-    ctx.fillStyle = '#64748b'; ctx.fillText('p = 7', W * 0.73, 28);
+    // Labels for prime columns (fade out as obstacles shrink)
+    const shrinkNow = Math.exp(-0.35 * (k - 1));
+    if (shrinkNow > 0.15) {
+      const labelAlpha = Math.min(1, shrinkNow * 2);
+      ctx.globalAlpha = labelAlpha;
+      ctx.font = 'bold 22px sans-serif';
+      ctx.fillStyle = '#f472b6'; ctx.fillText('p = 3', W * 0.22, 28);
+      ctx.fillStyle = '#a78bfa'; ctx.fillText('p = 5', W * 0.49, 28);
+      ctx.fillStyle = '#64748b'; ctx.fillText('p = 7', W * 0.73, 28);
+      ctx.globalAlpha = 1;
+    }
 
     // Update particles — potential flow deflection around circular obstacles
     for (const pt of particles) {
@@ -702,12 +711,24 @@ function startPorous() {
       ctx.beginPath(); ctx.arc(last.x, last.y, 2.5, 0, 7); ctx.fill();
     }
 
-    // Flow arrow and exit label
+    // Flow arrow
     ctx.fillStyle = '#94a3b8';
     ctx.font = '18px sans-serif';
     ctx.fillText('Flow \u2192', W * 0.02, H - 10);
-    ctx.fillStyle = '#fbbf2488';
-    ctx.fillText('Smooth exit = Poisson', W * 0.82, H - 10);
+
+    // Exit label — becomes prominent when obstacles are small
+    const poissonAlpha = Math.min(1, Math.max(0.15, 1 - shrinkNow));
+    if (shrinkNow < 0.3) {
+      // Big label when flow is nearly straight
+      ctx.globalAlpha = poissonAlpha;
+      ctx.fillStyle = '#fbbf24';
+      ctx.font = 'bold 28px sans-serif';
+      ctx.fillText('Uniform flow = Poisson regime', W * 0.28, H / 2 + 10);
+      ctx.globalAlpha = 1;
+    }
+    ctx.fillStyle = '#fbbf24' + (shrinkNow < 0.3 ? 'cc' : '55');
+    ctx.font = '16px sans-serif';
+    ctx.fillText('Exit \u2192 Poisson', W * 0.86, H - 10);
 
     porousAnim = requestAnimationFrame(frame);
   }
