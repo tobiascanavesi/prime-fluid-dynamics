@@ -23,8 +23,8 @@
 \newcommand{\cL}{\mathcal{L}}
 \newcommand{\eps}{\varepsilon}
 
-\title[A Burgers--Fisher Equation for Prime Gaps]{%
-A Burgers--Fisher Equation for Prime Gaps:\\
+\title[A Burgers-Fisher Equation for Prime Gaps]{%
+A Burgers-Fisher Equation for Prime Gaps:\\
 Spectral Analysis of Convergence to Poisson}
 
 \author{Tobias Canavesi}
@@ -36,19 +36,25 @@ Spectral Analysis of Convergence to Poisson}
 \begin{document}
 
 \begin{abstract}
-We propose a PDE model for the convergence of prime gaps to the Poisson regime.
-If the density $f$ of normalized prime gaps $v = g/\log x$ evolves under the Feller Fokker--Planck equation
----chosen because its stationary distribution is $\mathrm{Exp}(1)$ and its state-dependent 
-diffusivity matches the empirical rigidity of small gaps---then the velocity field $u = -\partial_v \log f$ 
-satisfies a Burgers--Fisher equation in a porous medium:
-\[
-\partial_t u + 2v\,u\,\partial_v u = v\,\partial_v^2 u + (v{+}2)\,\partial_v u + u(1{-}u).
-\]
-The Fisher--KPP reaction term $u(1{-}u)$ emerges from the Fokker--Planck structure and drives $u$ toward~$1$ (the Poisson equilibrium).
-The linearized perturbation operator has associated Laguerre polynomial eigenfunctions with spectral gap~$1$, and perturbations with 
-decaying forcing vanish as $O(1/(\log x)^\beta)$.
-Numerical verification at 11 scales from $10^3$ to $10^8$ shows the mutual information between consecutive gaps decays 
-as $(\log x)^{-0.19}$ ($R^2 = 0.986$) and that prime $p = 3$ carries $94\%$ of the sieve signal.
+The emergence of prime numbers from the deterministic sieve of Eratosthenes 
+into random probability at the macroscopic level, described by a Poisson process, 
+represents one of the most basic yet most interesting phenomena in number theory. 
+In this paper, we develop a new physical mechanism to describe this transition based on modeling the time-evolving 
+distribution of prime gaps as fluids moving through a porous medium. If the normalized 
+gap density follows a Feller-type Fokker-Planck equation---chosen to reflect the strict 
+constraints imposed by the nature of primes on short intervals---we show that the 
+corresponding velocity field satisfies a nonlinear Burgers-Fisher PDE. For our proposed 
+system, the Poisson regime does not represent an arbitrary statistical limit; 
+it is the only stable fixed point of the PDE, and it is stabilized by a Fisher-KPP 
+reaction term. By performing a spectral analysis of the linearized operator, we find 
+that there exists a Laguerre basis which forms an eigenbasis for the operator, 
+and contains a spectral gap of size $1$, indicating that any perturbation forced 
+by a decaying function will be removed to order $O(1 / (\log x)^\beta)$. Lastly, we have 
+conducted numerical simulations across eleven scales up to $x=10^{8}$, and demonstrated 
+that our theoretical framework provides a good description of both the decay rate of 
+the mutual information between successive prime gaps as $(\log x)^{-0.19}$, and the fact 
+that nearly all of the information content in this measure can be attributed to mod-$3$ 
+sieve constraints (approximately $94\%$).
 \end{abstract}
 
 \maketitle
@@ -58,20 +64,28 @@ as $(\log x)^{-0.19}$ ($R^2 = 0.986$) and that prime $p = 3$ carries $94\%$ of t
 \section{Introduction}
 % ====================================================================
 
-The sequence of prime numbers is entirely deterministic, sculpted by the rigid constraints of the sieve of Eratosthenes.
-Yet at macroscopic scales, the gaps between consecutive primes mimic a perfectly memoryless random process: Gallagher~\cite{Gallagher1976} proved conditionally on the Hardy--Littlewood conjecture~\cite{HL1923} that prime counts in short intervals converge to Poisson statistics, implying that normalized gaps approach the exponential distribution $f(v) = e^{-v}$.
-How does a system built on strict divisibility rules dissolve into statistical randomness?
+We know the set of all prime numbers follows strictly deterministic laws and is defined completely by the sieve of Eratosthenes. 
+However, at large scales, the gaps between subsequent prime numbers act exactly like a purely memoryless random process: Gallagher~\cite{Gallagher1976} 
+has shown, conditionally on the Hardy-Littlewood conjecture~\cite{HL1923}, that the counts of primes in short intervals will be Poisson distributed 
+and therefore the normalized gaps should follow an exponential distribution $f(v)=e^{-v}$. How does a system based solely on rigid divisibility laws 
+become statistically random?
 
-While the \emph{destination} (Poisson) is conditionally established, the \emph{dynamics} of this convergence have remained obscure.
-Lemke Oliver and Soundararajan~\cite{LO2016} discovered that consecutive primes exhibit unexpected biases in their residue patterns---a signature of the sieve's lingering grip---decaying as $O((\log\log x)/\log x)$; Holt~\cite{Holt2024} modeled these biases via sieve dynamics.
-But no differential equation governing the transition, and no quantitative convergence rate, have been established.
+Although the \emph{end point} (Poisson) is conditionally known, the \emph{process} which leads to this convergence remains unknown. 
+Lemke Oliver and Soundararajan~\cite{LO2016} showed that there is a statistically significant bias for the residue classes of consecutive primes, 
+indicative of a non-negligible residual influence of the sieve, decaying as $O((\log \log x)/(\log x))$; Holt~\cite{Holt2024} attempted to 
+model these biases using sieve dynamics. However, to date, no differential equation modeling the time evolution or quantifying the rate of 
+convergence has been proposed.
 
-In this paper, we propose that the answer lies in the language of fluid mechanics.
-Rather than treating prime gaps as a static probability distribution, we transform the gap density into a \emph{velocity field} and model the system as a physical flow through a porous medium---the sieve.
-We show that if the gap density evolves under a Feller Fokker--Planck equation~\cite{CIR1985, Risken1989}---whose state-dependent diffusivity mirrors the arithmetic rigidity of small gaps---the resulting velocity field satisfies a nonlinear Burgers--Fisher equation~\cite{Fisher1937, KPP1937}.
-The Poisson regime is not a statistical coincidence but the unique stable equilibrium of this PDE, enforced by a spectral gap of~$1$ and a self-correcting Fisher--KPP reaction term $u(1-u)$ that emerges naturally from the Fokker--Planck structure.
-Numerical verification at 11 scales yields a decay rate of $\approx (\log x)^{-0.19}$, driven overwhelmingly by the prime $p = 3$.
+In this work, we believe that the explanation for this behavior can be found in the language of fluid mechanics. Instead of viewing the density of 
+prime gaps as a static probability distribution, we represent it as a \emph{velocity field} and view our system as a fluid flowing through a porous 
+medium---the sieve. We demonstrate that if the density of the gaps evolves according to a Feller Fokker-Planck equation---whose state-dependent diffusion 
+represents the arithmetical rigidity of small gaps---then its corresponding velocity field satisfies a nonlinear Burgers-Fisher 
+equation~\cite{Fisher1937,KPP1937}.
 
+The Poisson regime is not simply a statistical accident; rather, it is the one stable solution to this partial differential equation; 
+this stability is guaranteed by both a spectral gap of $1$ and a Fisher-KPP reaction term $u(1-u)$, generated naturally by the structure of 
+the Fokker-Planck equation. We verified numerically the convergence at $11$ different length scales with a decay rate $\approx (\log x)^{-0.19}$; 
+however, it was clear that the dominant contribution came primarily from the single prime $p=3$.
 
 % ====================================================================
 \section{The Burgers--Fisher Equation for Prime Gaps}
@@ -80,14 +94,14 @@ Numerical verification at 11 scales yields a decay rate of $\approx (\log x)^{-0
 
 \subsection{The Feller process and its Fokker--Planck equation}
 
-We seek a diffusion process whose stationary distribution is $\mathrm{Exp}(1)$---the Gallagher--Poisson target.
-Among processes with linear drift, the unique choice whose diffusion coefficient also matches the 
-empirical structure of prime gaps is the Feller diffusion: its noise $\sigma(V) = \sqrt{2V}$ means 
-small gaps ($V \approx 0$) are nearly deterministic while large gaps fluctuate freely, reflecting 
-the tight arithmetic constraints the sieve imposes on small gaps (only $g = 2, 4, 6$ are common) versus 
-the broad distribution of large gaps.
-Cohen~\cite{Cohen2024} independently confirmed that the moments of prime gaps converge to those of the
-exponential distribution, further supporting this choice.
+We want to find an appropriate diffusion process whose stationary distribution is given by $\mathrm{Exp}(1)$, 
+the so-called Gallagher-Poisson distribution. The Feller diffusion process is, among all the diffusion processes with linear drift, 
+the only one where we obtain both the required form for the diffusion coefficient in order to reflect the empirical structure of prime gaps, 
+as well as the correct behavior of the fluctuations. Indeed, since the noise of the Feller diffusion process is given by $\sigma(V) = \sqrt{2V}$, 
+it follows that small gaps ($V \approx 0$) will be almost deterministic, whereas large gaps will behave like free random variables. 
+This reflects the strong arithmetic constraints imposed by the sieve on the small gap values (i.e., only $g=2$, $g=4$, and $g=6$ are common), 
+whereas large gap values can follow a much broader distribution. Cohen~\cite{Cohen2024} independently confirmed that the moments of prime gaps 
+converge to those of the exponential distribution, further supporting this choice.
 
 Consider the Feller diffusion (Cox--Ingersoll--Ross process)
 \begin{equation}\label{eq:sde}
@@ -352,56 +366,54 @@ adding $p = 3$ alone reduces KL divergence from the empirical distribution by $7
 
 \subsection{The role of the PDE model}
 
-Gallagher~\cite{Gallagher1976} already proved (conditionally) that prime gaps converge to Poisson. 
-Our paper does not give a new proof of this fact.
-What the paper provides is a \emph{mechanism}: a specific PDE (the Burgers--Fisher equation) 
-whose spectral structure explains \emph{why} the convergence occurs and \emph{how fast} it proceeds.
-
-As Tao~\cite{Tao2015} observes, probabilistic models in number theory are ``largely informal and fuzzy in nature'' yet ``indirectly enable rigorous progress'' 
-by serving as ``directional guides for fruitful conjectures'' and ``error-detection tools.''
-Our paper follows the pattern established by the random matrix theory program for $L$-functions: 
-Keating and Snaith~\cite{KS2000} derived the moments conjecture for $\zeta(1/2+it)$ by modeling 
-zeta with random matrix characteristic polynomials---a heuristic that generates precise, 
-testable predictions while awaiting rigorous derivation.
-Similarly, we derive the Burgers--Fisher equation from a specific Fokker--Planck model, 
-generate a convergence rate prediction ($\alpha \approx 0.19$), and verify it numerically, 
-while the derivation of the model from the Hardy--Littlewood conjecture remains open.
-
-The logical structure is:
-\begin{enumerate}
-\item \textbf{Pure PDE (Theorems~\ref{thm:burgers-fisher}--\ref{thm:convergence}):} If a density evolves 
-under the Feller Fokker--Planck equation, the velocity field satisfies the Burgers--Fisher equation 
-with stable equilibrium $u = 1$ and spectral gap $1$. Perturbations with decaying forcing vanish. \emph{These are unconditional theorems.}
-\item \textbf{Model (Hypothesis~\ref{hyp:sieve}):} The prime gap density at scale $s = \log x$ is 
-well-approximated by the Feller stationary distribution perturbed by the singular series, 
-with perturbation decaying as $O(1/s^\beta)$. \emph{This is a modeling assumption, supported by 
-numerical evidence but not derived from number theory.}
-\item \textbf{Consequence:} Under the model, the spectral gap drives convergence to Poisson at a 
-computable rate.
-\end{enumerate}
-
-The open challenge is to \emph{derive} Hypothesis~\ref{hyp:sieve} from the Hardy--Littlewood conjecture, 
-which would close the gap between the PDE theorems and number theory---as Talagrand's proof of the Parisi 
-formula~\cite{Talagrand2006} closed a 27-year gap between the physics prediction and rigorous mathematics.
-
-\subsection{Open problems}
+Gallagher~\cite{Gallagher1976} has shown (conditionally) that the distribution of prime gaps converges to Poisson. Our work does not 
+provide another proof of this theorem; rather, it outlines a mechanism or an explanation for why this convergence occurs and how quickly it proceeds. 
+As Tao~\cite{Tao2015} notes, probabilistic models used in number theory are ``largely informal and fuzzy in nature,'' yet 
+they ``indirectly enable rigorous progress'' by serving as ``directional guides'' for making conjectures and as ``error-detection tools.'' 
+Therefore, our use of probabilistic methods in number theory fits into a long line of research initiated by the random matrix theory program 
+for $L$-functions. Keating and Snaith~\cite{KS2000}, using random matrix characteristic polynomials to model zeta functions, 
+have predicted many properties of the zeta function and generated testable predictions for future verification. Similarly, we have derived the 
+Burgers-Fisher equation from a particular form of a Fokker-Planck model, made predictions about its convergence rate (e.g., $\alpha \approx 0.19$), 
+and verified those predictions computationally. However, whether our assumptions regarding the Fokker-Planck model can be rigorously derived 
+from number theory remains an open question. The logical structure of our arguments is therefore:
 
 \begin{enumerate}
-\item \textbf{Derive the sieve diffusion hypothesis} from Hardy--Littlewood and equidistribution of primes in arithmetic progressions.
-\item \textbf{Prove MI $\to 0$} from the Burgers--Fisher framework (requires extending from marginal to joint gap densities).
-\item \textbf{Compute the exponent} $\alpha \approx 0.19$ from first principles, starting from the pore strength $\delta_3 = 1$ and the equidistribution rate of gaps mod~$3$.
+\item \textbf{Pure PDE (Theorems~\ref{thm:burgers-fisher}--\ref{thm:convergence}):} A solution to the Feller Fokker-Planck equation represents the 
+evolution of a probability density. Thus, if a probability density evolves under the action of a Feller Fokker-Planck operator, then there exists a 
+velocity function satisfying the Burgers-Fisher equation. This velocity function has one stable equilibrium point located at $u=1$ and possesses a 
+spectral gap equal to one. All nontrivial perturbations to the steady-state solution with decaying forcing will vanish over time. These are \emph{unconditional} theorems.
+\item \textbf{Model (Hypothesis~\ref{hyp:sieve}):} The probability density of prime gaps near scale $s=\log x$ is accurately approximated by the 
+stationary density associated with a Feller Fokker-Planck operator, perturbed by the Hardy-Littlewood singular series. Furthermore, the magnitude of 
+these perturbations decreases as $O(1/s^{\beta})$, where $\beta > 0$. \emph{This is an empirical modeling assumption, which is supported by numerical 
+computations but lacks theoretical derivation from first principles in number theory.}
+\item \textbf{Consequences:} Using this model, we show that due to the existence of a spectral gap in the velocity function associated with the 
+Burgers-Fisher equation, solutions to this equation corresponding to initial conditions given by prime-gap distributions evolve toward the Poisson distribution at a computable rate.
 \end{enumerate}
 
+Thus, although our results demonstrate the convergence of prime gaps to Poisson using a probabilistic framework modeled after fluid dynamics, 
+establishing this result rigorously requires a derivation of Hypothesis~\ref{hyp:sieve} based upon the Hardy-Littlewood conjecture. 
+This would represent an important step forward in closing the gap between number-theoretic models and their rigorous mathematical 
+formulations---as was done by Talagrand in his derivation of the Parisi formula~\cite{Talagrand2006}, which had been predicted by physicists 27 years earlier.
+
+\subsection{Open Problems}
+
+We pose three open questions:
+\begin{enumerate}
+\item \textbf{Derive the Sieve Diffusion Hypothesis} from Hardy-Littlewood and the equidistribution of primes in arithmetic progressions.
+\item \textbf{Show $\MI \to 0$} from the Burgers-Fisher framework (requires extending from marginal to joint gap densities).
+\item \textbf{Compute the Exponent} $\alpha \approx 0.19$ from first principles, starting from pore strength $\delta_3 = 1$ and the equidistribution rate of gaps modulo $3$.
+\end{enumerate}
 
 % ====================================================================
 \section*{Computational Details}
 % ====================================================================
 
-Python 3 with SymPy, NumPy, SciPy. Runtime $\approx 2$ minutes.
-Code, data, and interactive visualization: \url{https://github.com/tobiascanavesi/prime-fluid-dynamics}
+To run the numerical simulations, Python 3 is required, along with the SymPy, NumPy, and SciPy libraries. 
+Code, data, and an interactive visualization can be found at \url{https://github.com/tobiascanavesi/prime-fluid-dynamics}. 
+The interactive HTML was generated with the goal of bringing the ideas of the paper to a wider audience.
 
-\subsection*{Use of generative AI}
-Claude Opus 4.6 (Anthropic, 2025) assisted with code development and \LaTeX{} formatting.
+\subsection*{Use of Generative AI}
+Claude Opus 4.6 (Anthropic, 2025) assisted in the development of code and formatting in \LaTeX{}. 
 All mathematical content is the original contribution of the author.
 
 

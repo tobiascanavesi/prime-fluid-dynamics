@@ -2,7 +2,7 @@
 
 We prove that the velocity field $u = -\partial_v \log f$, derived from the prime gap density, satisfies a Burgers-Fisher equation in a porous medium whose unique stable equilibrium is the Poisson distribution.
 
-> **A Burgers-Fisher Equation for Prime Gaps: Spectral Proof of Convergence to Poisson**
+> **A Burgers-Fisher Equation for Prime Gaps: Spectral Analysis of Convergence to Poisson**
 > Tobias Canavesi, April 2026
 
 ## The Equation
@@ -47,7 +47,7 @@ Outputs: symbolic verification of all theorems, numerical experiments at 11 scal
 
 ```bibtex
 @article{canavesi2026burgersfisher,
-  title={A Burgers-Fisher Equation for Prime Gaps: Spectral Proof of Convergence to Poisson},
+  title={A Burgers-Fisher Equation for Prime Gaps: Spectral Analysis of Convergence to Poisson},
   author={Canavesi, Tobias},
   year={2026}
 }
