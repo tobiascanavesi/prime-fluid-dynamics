@@ -44,7 +44,8 @@ Outputs: symbolic verification of all theorems, numerical experiments at 11 scal
 | `figure1.pdf` | Generated figure |
 
 ## Citation
-
+Waiting to be in arxiv so the correct cite will be updated 
+in the following days.
 ```bibtex
 @article{canavesi2026burgersfisher,
   title={A Burgers-Fisher Equation for Prime Gaps: Spectral Analysis of Convergence to Poisson},
